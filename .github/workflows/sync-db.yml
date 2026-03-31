@@ -2,8 +2,9 @@ name: Brightcall Supabase Sync
 
 on:
   schedule:
-    # Runs every day at 1:00 AM UTC
-    - cron: '0 1 * * *'
+    # Runs Hourly every day from 9:00 AM to 7:00 PM GST (Dubai Time)
+    # (UTC 5:00 to 15:00)
+    - cron: '0 5-15 * * *'
   workflow_dispatch: # Allows you to manually trigger it from GitHub UI
 
 jobs:
