@@ -17,7 +17,6 @@ const AGENTS = [
   { id: '827910', label: 'Telesales 2' },
   { id: '827911', label: 'Telesales 3' },
   { id: '827912', label: 'Telesales 4' },
-  { id: '827915', label: 'Telesales 5' },
 ]
 
 export default function Navbar({ dateRange, selectedAgent, onRangeChange, onAgentChange, onRefresh, loading, lastUpdated }) {

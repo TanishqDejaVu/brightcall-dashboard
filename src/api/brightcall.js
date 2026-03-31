@@ -12,8 +12,6 @@ const AGENT_NAMES = {
   '827910': 'Telesales 2',
   '827911': 'Telesales 3',
   '827912': 'Telesales 4',
-  '827915': 'Telesales 5',
-  '173827': 'Admin',
 }
 
 function buildPayload(dayFrom, dayTo, page = 1) {
@@ -97,7 +95,13 @@ export async function fetchAllCalls(startDate, endDate, onProgress) {
   }
 }
 
-export function computeMetrics(calls) {
+export function computeMetrics(allCalls) {
+  // 🚫 Filtering out Admin and Telesales 5 for a clean agent-only dashboard
+  const calls = allCalls.filter(c => {
+    const aid = String(c.involvedAgent1Id || c.userId || '')
+    return (aid === '827909' || aid === '827910' || aid === '827911' || aid === '827912')
+  })
+
   const total         = calls.length
   const answeredCalls = calls.filter(c => c.state === 1)
   const answered      = answeredCalls.length
