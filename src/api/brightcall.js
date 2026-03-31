@@ -142,20 +142,23 @@ export function computeMetrics(allCalls) {
   // Calls by day
   const byDayMap = {}
   for (const c of calls) {
-    const day = (c.timestamp || '').slice(0, 10)
-    if (!day) continue
+    if (!c.timestamp) continue
+    const d = new Date(c.timestamp)
+    // using en-CA locale for a perfectly standard YYYY-MM-DD in browser local time
+    const day = d.toLocaleDateString('en-CA') 
+    
     if (!byDayMap[day]) byDayMap[day] = { date: day, totalCalls: 0, answeredCalls: 0 }
     byDayMap[day].totalCalls++
     if (c.state === 1) byDayMap[day].answeredCalls++
   }
   const callsByDay = Object.values(byDayMap).sort((a, b) => a.date.localeCompare(b.date))
 
-  // Calls by hour
+  // Calls by hour (Auto-converted to Local Time)
   const byHourMap = {}
   for (const c of calls) {
-    const ts = c.timestamp || ''
-    if (ts.length < 13) continue
-    const hour = parseInt(ts.slice(11, 13), 10)
+    if (!c.timestamp) continue
+    const date = new Date(c.timestamp)
+    const hour = date.getHours()
     byHourMap[hour] = (byHourMap[hour] || 0) + 1
   }
   const callsByHour = Array.from({ length: 24 }, (_, h) => ({
