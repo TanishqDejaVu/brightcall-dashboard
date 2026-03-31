@@ -18,13 +18,13 @@ export default function AgentTable({ agents }) {
   const [sort, setSort] = useState({ col: 'callsMade', dir: 'desc' })
   const sorted = sortData(agents, sort.col, sort.dir)
 
-  const th = (col, label) => {
+  const th = (col, label, align = 'left') => {
     const active = sort.col === col
     const Icon = sort.dir === 'asc' ? ChevronUp : ChevronDown
     return (
-      <th className="px-3 py-2.5 text-left text-[10px] text-slate-400 font-semibold uppercase tracking-wider cursor-pointer hover:text-slate-700 transition select-none whitespace-nowrap"
+      <th className={`px-3 py-2.5 text-${align} text-[10px] text-slate-400 font-semibold uppercase tracking-wider cursor-pointer hover:text-slate-700 transition select-none whitespace-nowrap`}
           onClick={() => setSort(s => ({ col, dir: s.col === col && s.dir === 'desc' ? 'asc' : 'desc' }))}>
-        <span className="flex items-center gap-1">
+        <span className={`inline-flex items-center gap-1 ${align === 'right' ? 'flex-row-reverse' : ''}`}>
           {label}
           {active && <Icon size={10} />}
         </span>
@@ -34,29 +34,29 @@ export default function AgentTable({ agents }) {
 
   return (
     <div className="rounded-xl border border-slate-200 bg-white backdrop-blur overflow-hidden">
-      <div className="px-5 py-3 border-b border-slate-200">
-        <h3 className="text-sm font-semibold text-slate-700">Agent Leaderboard</h3>
+      <div className="px-5 py-3 border-b border-slate-200 bg-slate-50/50">
+        <h3 className="text-sm font-semibold text-slate-800">Agent Leaderboard</h3>
       </div>
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="border-b border-slate-200 bg-slate-50">
             <tr>
-              <th className="px-3 py-2.5 text-left text-[10px] text-slate-400 font-semibold uppercase tracking-wider w-10">#</th>
+              <th className="px-4 py-2.5 text-center text-[10px] text-slate-400 font-bold uppercase tracking-wider w-12">#</th>
               {th('agentName', 'Agent')}
-              {th('callsMade', 'Calls')}
-              {th('connected', 'Connected')}
-              {th('appointments', 'Appt')}
-              {th('avgTalkTime', 'Avg Talk')}
-              {th('leadQualPct', 'Lead %')}
+              {th('callsMade', 'Calls', 'right')}
+              {th('connected', 'Connected', 'right')}
+              {th('appointments', 'Appt', 'right')}
+              {th('avgTalkTime', 'Avg Talk', 'right')}
+              {th('leadQualPct', 'Lead %', 'right')}
             </tr>
           </thead>
           <tbody>
             {sorted.map((a, i) => (
-              <tr key={a.agentName} className="border-b border-slate-100 hover:bg-slate-50 transition">
-                <td className="px-3 py-2.5 text-center">
-                  {i === 0 ? <Trophy size={14} className="text-amber-600 inline" /> : <span className="text-slate-300 text-xs">{i + 1}</span>}
+              <tr key={a.agentName} className="border-b border-slate-100 hover:bg-slate-50/80 transition">
+                <td className="px-4 py-2.5 text-center">
+                  {i === 0 ? <Trophy size={14} className="text-amber-600 inline" /> : <span className="text-slate-400 font-mono text-xs">{i + 1}</span>}
                 </td>
-                <td className="px-3 py-2.5 font-medium text-slate-800 whitespace-nowrap">{a.agentName}</td>
+                <td className="px-3 py-2.5 font-semibold text-slate-800 whitespace-nowrap">{a.agentName}</td>
                 <td className="px-3 py-2.5 font-mono text-slate-700 text-right">{a.callsMade.toLocaleString()}</td>
                 <td className="px-3 py-2.5 font-mono text-slate-700 text-right">{a.connected.toLocaleString()}</td>
                 <td className="px-3 py-2.5 font-mono text-slate-700 text-right">{a.appointments}</td>
