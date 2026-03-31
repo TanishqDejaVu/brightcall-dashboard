@@ -1,0 +1,29 @@
+name: Brightcall Supabase Sync
+
+on:
+  schedule:
+    # Runs every day at 1:00 AM UTC
+    - cron: '0 1 * * *'
+  workflow_dispatch: # Allows you to manually trigger it from GitHub UI
+
+jobs:
+  sync_calls:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Run Supabase Sync Script
+        env:
+          BRIGHTCALL_API_KEY: ${{ secrets.BRIGHTCALL_API_KEY }}
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+        run: node scripts/sync.js
