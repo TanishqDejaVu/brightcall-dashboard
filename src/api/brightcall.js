@@ -51,19 +51,33 @@ async function fetchBatched(pages, startDate, endDate, params, onProgress) {
 export async function fetchAllCalls(startDate, endDate, onProgress) {
   // ⚡ Hyperspeed Datastore Query Logic
   if (supabase) {
-    onProgress?.(1, 1)
-    const { data, error } = await supabase
-      .from('calls')
-      .select('*')
-      .gte('timestamp', `${startDate}T00:00:00Z`)
-      .lte('timestamp', `${endDate}T23:59:59Z`)
-      .order('timestamp', { ascending: false })
+    let allData = [];
+    let page = 0;
+    const PAGE_SIZE = 1000;
+    
+    while (true) {
+      const { data, error } = await supabase
+        .from('calls')
+        .select('*')
+        .gte('timestamp', `${startDate}T00:00:00Z`)
+        .lte('timestamp', `${endDate}T23:59:59Z`)
+        .order('timestamp', { ascending: false })
+        .range(page * PAGE_SIZE, (page + 1) * PAGE_SIZE - 1);
+        
+      if (error) {
+        console.error("Supabase fetch failed", error);
+        throw new Error('FETCH_ERROR');
+      }
       
-    if (error) {
-      console.error("Supabase fetch failed", error)
-      throw new Error('FETCH_ERROR')
+      if (data) allData.push(...data);
+      
+      // If we received fewer than 1000 rows, we have hit the end of the query
+      if (!data || data.length < PAGE_SIZE) break;
+      page++;
     }
-    return data || []
+    
+    onProgress?.(1, 1);
+    return allData;
   }
 
   // 🐢 Fallback Pagination Proxy Logic
