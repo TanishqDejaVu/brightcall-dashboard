@@ -20,21 +20,21 @@ export default function Dashboard() {
   const { data, loading, refreshing, progress, error, lastUpdated, refetch } = useDashboard(dateRange, selectedAgent)
 
   const kpi1 = data ? [
-    { icon: Phone, label: 'Total Calls', value: data.summary.totalCalls.toLocaleString(), colorClass: 'text-blue-600', subLabel: 'Attempted' },
-    { icon: PhoneCall, label: 'Answered', value: data.summary.answeredCalls.toLocaleString(), colorClass: 'text-emerald-600', subLabel: 'Connected' },
-    { icon: TrendingUp, label: 'Connection Rate', value: data.summary.connectionRate + '%', colorClass: data.summary.connectionRate >= 25 ? 'text-emerald-600' : data.summary.connectionRate >= 18 ? 'text-amber-600' : 'text-red-600', subLabel: 'Answer rate' },
-    { icon: Clock, label: 'Avg Talk Time', value: data.summary.avgTalkTimeFmt, colorClass: 'text-purple-600', subLabel: 'Per answered call' },
-    { icon: Timer, label: 'Total Talk Time', value: data.summary.totalTalkTimeFmt, colorClass: 'text-indigo-600', subLabel: 'All agents' },
-    { icon: Activity, label: 'Avg Call Duration', value: data.summary.avgCallDuration + 's', colorClass: 'text-teal-600', subLabel: 'All calls' },
+    { icon: PhoneCall, label: 'Answered', value: data.summary.answeredCalls.toLocaleString(), colorClass: 'text-emerald-600', subLabel: 'Connected Calls', breakdown: data.breakdowns.answered },
+    { icon: PhoneOff, label: 'Unanswered', value: (data.summary.totalCalls - data.summary.answeredCalls).toLocaleString(), colorClass: 'text-red-600', subLabel: 'Missed/Lost', breakdown: data.breakdowns.unanswered },
+    { icon: Phone, label: 'Total Calls', value: data.summary.totalCalls.toLocaleString(), colorClass: 'text-blue-600', subLabel: 'Total Attempts' },
+    { icon: TrendingUp, label: 'Conn. Rate', value: data.summary.connectionRate + '%', colorClass: data.summary.connectionRate >= 25 ? 'text-emerald-600' : 'text-amber-600', healthType: 'connection_rate', subLabel: 'Answer rate' },
+    { icon: Target, label: 'Lead Qual %', value: data.leads.leadQualPct + '%', colorClass: 'text-purple-600', subLabel: 'Of total calls' },
+    { icon: Clock, label: 'Avg Talk Time', value: data.summary.avgTalkTimeFmt, colorClass: 'text-indigo-600', subLabel: 'Per call' },
   ] : []
 
   const kpi2 = data ? [
+    { icon: CalendarCheck, label: 'Appointments', value: data.leads.appt.toLocaleString(), colorClass: 'text-blue-600', subLabel: data.leads.leads + ' total qualified' },
     { icon: UserCheck, label: 'Follow Ups', value: data.leads.followUp.toLocaleString(), colorClass: 'text-emerald-600', subLabel: 'Scheduled' },
-    { icon: CalendarCheck, label: 'Appointments', value: data.leads.appt.toLocaleString(), colorClass: 'text-blue-600', subLabel: 'Booked' },
-    { icon: Target, label: 'Lead Qual %', value: data.leads.leadQualPct + '%', colorClass: 'text-purple-600', subLabel: 'Of total calls' },
-    { icon: Repeat, label: 'Calls / Number', value: data.leads.callsPerUniqueNumber, colorClass: 'text-amber-600', subLabel: `${data.leads.uniqueNumbers.toLocaleString()} unique numbers` },
-    { icon: PhoneOff, label: 'No Answer', value: data.leads.noAnswer.toLocaleString(), colorClass: 'text-red-600', subLabel: data.summary.totalCalls > 0 ? Math.round(data.leads.noAnswer/data.summary.totalCalls*100) + '% of total' : '' },
-    { icon: BarChart2, label: 'Busy', value: data.leads.busy.toLocaleString(), colorClass: 'text-orange-600', subLabel: data.summary.totalCalls > 0 ? Math.round(data.leads.busy/data.summary.totalCalls*100) + '% of total' : '' },
+    { icon: Activity, label: 'Avg Call Duration', value: data.summary.avgCallDuration + 's', colorClass: 'text-teal-600', subLabel: 'Incl. ringing' },
+    { icon: Timer, label: 'Total Talk', value: data.summary.totalTalkTimeFmt, colorClass: 'text-slate-600', subLabel: 'Cumulative' },
+    { icon: Repeat, label: 'Calls / Number', value: data.leads.callsPerUniqueNumber, colorClass: 'text-amber-600', subLabel: `${data.leads.uniqueNumbers.toLocaleString()} Leads` },
+    { icon: BarChart2, label: 'Efficiency', value: data.leads.leadQualPct > 5 ? 'High' : 'Normal', colorClass: 'text-slate-500', subLabel: 'Status check' },
   ] : []
 
   return (

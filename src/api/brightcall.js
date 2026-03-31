@@ -125,6 +125,22 @@ export function computeMetrics(allCalls) {
   // Leads = Appointment Scheduled + Qualified
   const leads = appt + qualified
 
+  const unansweredTags = [
+    'Not answered', 'Not eligible', 'not interested', 'number not in use', 
+    'do not call', 'not requested', 'real estate agent', 'job seeker', 
+    'no longer interested', 'wrong no', 'no does not exist', 'no answer', 
+    'switch off', 'busy', 'not reachable', 'hung up', 'other reason'
+  ]
+  const unansweredBreakdown = unansweredTags.map(tag => ({
+    label: tag,
+    count: calls.filter(c => outcomeMatch(c, tag)).length
+  })).filter(b => b.count > 0).sort((a,b) => b.count - a.count)
+
+  const answeredBreakdown = [
+    { label: 'Follow Up', count: followUp },
+    { label: 'Qualified', count: leads } // Qualified + Appointment scheduled
+  ].filter(b => b.count > 0)
+
   // Calls per Lead = Total Calls / Unique phone numbers dialled
   const uniqueNumbers = new Set(calls.map(c => c.clientNumber).filter(Boolean)).size
   const callsPerUniqueNumber = uniqueNumbers > 0 ? Math.round(total / uniqueNumbers * 100) / 100 : 0
@@ -222,5 +238,6 @@ export function computeMetrics(allCalls) {
     agentPerformance,
     heatmap,
     heatmapDayNames: DAY_NAMES,
+    breakdowns: { unanswered: unansweredBreakdown, answered: answeredBreakdown }
   }
 }
