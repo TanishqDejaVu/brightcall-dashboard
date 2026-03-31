@@ -27,9 +27,9 @@ function buildPayload(dayFrom, dayTo, page = 1) {
 async function fetchAndSync() {
   const today = new Date();
   
-  // Script runs daily, fetches last 7 days to cover missed uploads/late updates
+  // Historical Backfill: Fetching the last 180 days of data securely spanning all call logs
   const past = new Date(today);
-  past.setDate(past.getDate() - 7);
+  past.setDate(past.getDate() - 180);
   
   const dayTo = today.toISOString().split('T')[0];
   const dayFrom = past.toISOString().split('T')[0];
