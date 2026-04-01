@@ -1,6 +1,11 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchAllCalls, computeMetrics } from '../api/brightcall'
+import { createClient } from '@supabase/supabase-js'
 import { format, subDays, subMonths, subYears } from 'date-fns'
+
+const SB_URL = import.meta.env.VITE_SUPABASE_URL
+const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
+const realtimeClient = (SB_URL && SB_KEY) ? createClient(SB_URL, SB_KEY) : null
 
 const CACHE_KEY = 'bc_metrics_v1'
 
@@ -65,8 +70,22 @@ export function useDashboard(dateRange = '1w', selectedAgent = 'all') {
 
   useEffect(() => {
     load()
-    timerRef.current = setInterval(load, 300000) // refresh every 5 min
-    return () => clearInterval(timerRef.current)
+    timerRef.current = setInterval(load, 300000) // fallback refresh every 5 min
+
+    // Realtime: reload instantly when calls table changes
+    const channel = realtimeClient
+      ? realtimeClient
+          .channel('calls-changes')
+          .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, () => {
+            load()
+          })
+          .subscribe()
+      : null
+
+    return () => {
+      clearInterval(timerRef.current)
+      channel?.unsubscribe()
+    }
   }, [load])
 
   return { data, loading, refreshing, progress, error, lastUpdated, refetch: load }
