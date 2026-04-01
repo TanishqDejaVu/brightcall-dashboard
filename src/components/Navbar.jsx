@@ -52,7 +52,7 @@ export default function Navbar({ dateRange, selectedAgent, onRangeChange, onAgen
         <img
           src={dejavuLogo}
           alt="Deja Vu Real Estate"
-          className="h-24 w-auto object-contain dark:invert -my-6"
+          className="h-32 w-auto object-contain dark:invert -my-8"
         />
 
         <div className="w-px h-5 bg-slate-200 dark:bg-white/[0.07]" />
