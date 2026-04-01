@@ -14,114 +14,139 @@ import EfficiencyGauge from '../components/EfficiencyGauge'
 import SkeletonCard from '../components/SkeletonCard'
 import { Phone, PhoneCall, TrendingUp, Clock, Timer, Activity, UserCheck, CalendarCheck, Target, PhoneOff, Repeat, BarChart2 } from 'lucide-react'
 
+function SectionLabel({ children }) {
+  return (
+    <div className="flex items-center gap-2.5 mb-3">
+      <div className="w-0.5 h-3.5 bg-blue-500 rounded-full opacity-60" />
+      <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">{children}</span>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [dateRange, setDateRange] = useState('1w')
   const [selectedAgent, setSelectedAgent] = useState('all')
   const { data, loading, refreshing, progress, error, lastUpdated, refetch } = useDashboard(dateRange, selectedAgent)
 
   const kpi1 = data ? [
-    { icon: PhoneCall, label: 'Answered', value: data.summary.answeredCalls.toLocaleString(), colorClass: 'text-emerald-600', subLabel: 'Connected Calls', breakdown: data.breakdowns.answered },
-    { icon: PhoneOff, label: 'Unanswered', value: (data.summary.totalCalls - data.summary.answeredCalls).toLocaleString(), colorClass: 'text-red-600', subLabel: 'Missed/Lost', breakdown: data.breakdowns.unanswered },
-    { icon: Phone, label: 'Total Calls', value: data.summary.totalCalls.toLocaleString(), colorClass: 'text-blue-600', subLabel: 'Total Attempts' },
-    { icon: TrendingUp, label: 'Conn. Rate', value: data.summary.connectionRate + '%', colorClass: data.summary.connectionRate >= 25 ? 'text-emerald-600' : 'text-amber-600', healthType: 'connection_rate', subLabel: 'Answer rate' },
-    { icon: Target, label: 'Lead Qual %', value: data.leads.leadQualPct + '%', colorClass: 'text-purple-600', subLabel: 'Of total calls' },
-    { icon: Clock, label: 'Avg Talk Time', value: data.summary.avgTalkTimeFmt, colorClass: 'text-indigo-600', subLabel: 'Per call' },
+    { icon: PhoneCall, label: 'Answered', value: data.summary.answeredCalls.toLocaleString(), colorClass: 'text-emerald-400', subLabel: 'Connected calls', breakdown: data.breakdowns.answered },
+    { icon: PhoneOff, label: 'Unanswered', value: (data.summary.totalCalls - data.summary.answeredCalls).toLocaleString(), colorClass: 'text-red-400', subLabel: 'Missed / lost', breakdown: data.breakdowns.unanswered },
+    { icon: Phone, label: 'Total Calls', value: data.summary.totalCalls.toLocaleString(), colorClass: 'text-blue-400', subLabel: 'Total attempts' },
+    { icon: TrendingUp, label: 'Conn. Rate', value: data.summary.connectionRate + '%', colorClass: data.summary.connectionRate >= 25 ? 'text-emerald-400' : 'text-amber-400', healthType: 'connection_rate', subLabel: 'Answer rate' },
+    { icon: Target, label: 'Lead Qual %', value: data.leads.leadQualPct + '%', colorClass: 'text-purple-400', subLabel: 'Of total calls' },
+    { icon: Clock, label: 'Avg Talk Time', value: data.summary.avgTalkTimeFmt, colorClass: 'text-indigo-400', subLabel: 'Per call' },
   ] : []
 
   const kpi2 = data ? [
-    { icon: CalendarCheck, label: 'Appointments', value: data.leads.appt.toLocaleString(), colorClass: 'text-blue-600', subLabel: data.leads.leads + ' total qualified' },
-    { icon: UserCheck, label: 'Follow Ups', value: data.leads.followUp.toLocaleString(), colorClass: 'text-emerald-600', subLabel: 'Scheduled' },
-    { icon: Activity, label: 'Avg Call Duration', value: data.summary.avgCallDuration + 's', colorClass: 'text-teal-600', subLabel: 'Incl. ringing' },
-    { icon: Timer, label: 'Total Talk', value: data.summary.totalTalkTimeFmt, colorClass: 'text-slate-600', subLabel: 'Cumulative' },
-    { icon: Repeat, label: 'Calls / Number', value: data.leads.callsPerUniqueNumber, colorClass: 'text-amber-600', subLabel: `${data.leads.uniqueNumbers.toLocaleString()} Leads` },
-    { icon: BarChart2, label: 'Efficiency', value: data.leads.leadQualPct > 5 ? 'High' : 'Normal', colorClass: 'text-slate-500', subLabel: 'Status check' },
+    { icon: CalendarCheck, label: 'Appointments', value: data.leads.appt.toLocaleString(), colorClass: 'text-blue-400', subLabel: data.leads.leads + ' total qualified' },
+    { icon: UserCheck, label: 'Follow Ups', value: data.leads.followUp.toLocaleString(), colorClass: 'text-emerald-400', subLabel: 'Scheduled' },
+    { icon: Activity, label: 'Avg Duration', value: data.summary.avgCallDuration + 's', colorClass: 'text-teal-400', subLabel: 'Incl. ringing' },
+    { icon: Timer, label: 'Total Talk', value: data.summary.totalTalkTimeFmt, colorClass: 'text-slate-400', subLabel: 'Cumulative' },
+    { icon: Repeat, label: 'Calls / Number', value: data.leads.callsPerUniqueNumber, colorClass: 'text-amber-400', subLabel: `${data.leads.uniqueNumbers.toLocaleString()} leads` },
+    { icon: BarChart2, label: 'Efficiency', value: data.leads.leadQualPct > 5 ? 'High' : 'Normal', colorClass: 'text-slate-400', subLabel: 'Status check' },
   ] : []
 
   return (
-    <div>
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <Navbar
-          dateRange={dateRange}
-          selectedAgent={selectedAgent}
-          onRangeChange={setDateRange}
-          onAgentChange={setSelectedAgent}
-          onRefresh={refetch}
-          loading={loading || refreshing}
-          lastUpdated={lastUpdated}
-        />
+    <div className="min-h-screen bg-[#070b14] bg-grid text-slate-100">
+      <Navbar
+        dateRange={dateRange}
+        selectedAgent={selectedAgent}
+        onRangeChange={setDateRange}
+        onAgentChange={setSelectedAgent}
+        onRefresh={refetch}
+        loading={loading || refreshing}
+        lastUpdated={lastUpdated}
+      />
 
-        <div className="max-w-[1600px] mx-auto px-4 py-5 space-y-4">
+      <div className="max-w-[1600px] mx-auto px-5 py-7 space-y-7">
 
-          {/* Error */}
-          {error && (
-            <div className="flex items-center justify-between px-5 py-3 rounded-xl bg-red-500/10 border border-red-500/30 text-red-600 text-sm">
-              <span>{error === 'INVALID_API_KEY' ? 'Invalid API Key — check VITE_BRIGHTCALL_API_KEY in .env' : 'Failed to fetch data. Check your connection.'}</span>
-              <button onClick={refetch} className="px-3 py-1 rounded-lg bg-red-500/20 hover:bg-red-500/30 transition text-xs font-semibold">Retry</button>
+        {/* Error */}
+        {error && (
+          <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-red-500/[0.08] border border-red-500/20 text-red-400 text-sm">
+            <span>{error === 'INVALID_API_KEY' ? 'Invalid API Key — check VITE_BRIGHTCALL_API_KEY in .env' : 'Failed to fetch data. Check your connection.'}</span>
+            <button onClick={refetch} className="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 transition text-xs font-semibold">Retry</button>
+          </div>
+        )}
+
+        {/* Progress bar */}
+        {loading && progress.total > 0 && (
+          <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] px-5 py-4">
+            <div className="flex items-center justify-between text-xs text-slate-600 mb-3">
+              <span>Fetching call data...</span>
+              <span className="font-mono text-slate-500">{progress.done} / {progress.total} pages</span>
             </div>
-          )}
-
-          {/* Progress bar — only shown on first load (no cache) */}
-          {loading && progress.total > 0 && (
-            <div className="rounded-xl border border-slate-200 bg-white px-5 py-3">
-              <div className="flex items-center justify-between text-xs text-slate-500 mb-2">
-                <span>Fetching call data...</span>
-                <span className="font-mono text-slate-700">{progress.done} / {progress.total} pages</span>
-              </div>
-              <div className="h-1.5 rounded-full bg-slate-200 overflow-hidden">
-                <div
-                  className="h-full rounded-full bg-blue-600 transition-all duration-300"
-                  style={{ width: `${Math.round(progress.done / progress.total * 100)}%` }}
-                />
-              </div>
+            <div className="h-[3px] rounded-full bg-white/[0.05] overflow-hidden">
+              <div
+                className="h-full rounded-full bg-blue-500 transition-all duration-300"
+                style={{ width: `${Math.round(progress.done / progress.total * 100)}%`, boxShadow: '0 0 8px rgba(59,130,246,0.6)' }}
+              />
             </div>
-          )}
+          </div>
+        )}
 
-          {/* Alerts */}
-          {data && <AlertBanner data={data} />}
+        {/* Alerts */}
+        {data && <AlertBanner data={data} />}
 
-          {/* KPI Row 1 */}
+        {/* KPI rows */}
+        <div>
+          <SectionLabel>Key Metrics</SectionLabel>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
+            {loading ? Array.from({length:6}).map((_,i)=><SkeletonCard key={i}/>) :
+              kpi1.map((k, i) => <KPICard key={k.label} {...k} delay={i * 60} />)}
+          </div>
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
             {loading ? Array.from({length:6}).map((_,i)=><SkeletonCard key={i}/>) :
-              kpi1.map((k, i) => <KPICard key={k.label} {...k} delay={i * 50} />)}
+              kpi2.map((k, i) => <KPICard key={k.label} {...k} delay={360 + i * 60} />)}
           </div>
+        </div>
 
-          {/* KPI Row 2 */}
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-            {loading ? Array.from({length:6}).map((_,i)=><SkeletonCard key={i}/>) :
-              kpi2.map((k, i) => <KPICard key={k.label} {...k} delay={300 + i * 50} />)}
-          </div>
+        {/* Funnel */}
+        <div>
+          <SectionLabel>Conversion Funnel</SectionLabel>
+          {loading ? <SkeletonCard className="h-36" /> : data && <FunnelChart data={data} />}
+        </div>
 
-          {/* Funnel */}
-          {loading ? <SkeletonCard className="h-40" /> : data && <FunnelChart data={data} />}
-
-          {/* Charts row 1 */}
+        {/* Charts row 1 */}
+        <div>
+          <SectionLabel>Call Activity</SectionLabel>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {loading ? <><SkeletonCard className="lg:col-span-2 h-64" /><SkeletonCard className="h-64" /></> : data && <>
               <div className="lg:col-span-2"><DailyBarChart data={data.callsByDay} /></div>
               <QualityDonut quality={data.quality} total={data.summary.totalCalls} />
             </>}
           </div>
+        </div>
 
-          {/* Charts row 2 */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            {loading ? <><SkeletonCard className="h-64" /><SkeletonCard className="h-64" /></> : data && <>
-              <OutcomeChart data={data.outcomeDist} />
-              <HourlyAreaChart data={data.callsByHour} />
-            </>}
-          </div>
+        {/* Charts row 2 */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          {loading ? <><SkeletonCard className="h-64" /><SkeletonCard className="h-64" /></> : data && <>
+            <OutcomeChart data={data.outcomeDist} />
+            <HourlyAreaChart data={data.callsByHour} />
+          </>}
+        </div>
 
-          {/* Gauge + Agent table */}
+        {/* Gauge + Agent table */}
+        <div>
+          <SectionLabel>Agent Performance</SectionLabel>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {loading ? <><SkeletonCard className="h-64" /><SkeletonCard className="lg:col-span-3 h-64" /></> : data && <>
               <EfficiencyGauge data={data} />
               <div className="lg:col-span-3"><AgentTable agents={data.agentPerformance} /></div>
             </>}
           </div>
-
-          {/* Heatmap */}
-          {loading ? <SkeletonCard className="h-48" /> : data && <HeatmapGrid heatmap={data.heatmap} />}
-
         </div>
+
+        {/* Heatmap */}
+        <div>
+          <SectionLabel>Activity Heatmap</SectionLabel>
+          {loading ? <SkeletonCard className="h-48" /> : data && <HeatmapGrid heatmap={data.heatmap} />}
+        </div>
+
+        {/* Footer */}
+        <div className="text-center py-6 border-t border-white/[0.04]">
+          <span className="text-[11px] text-slate-700">Brightcall Analytics · Auto-refreshes every 5 min</span>
+        </div>
+
       </div>
     </div>
   )

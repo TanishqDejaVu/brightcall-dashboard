@@ -1,9 +1,9 @@
 export default function SkeletonCard({ className = '' }) {
   return (
-    <div className={`rounded-xl border border-slate-200 bg-white p-4 ${className}`}>
-      <div className="skeleton h-3 w-24 rounded mb-3" />
-      <div className="skeleton h-8 w-16 rounded mb-2" />
-      <div className="skeleton h-2.5 w-32 rounded" />
+    <div className={`rounded-2xl border border-white/[0.05] bg-[#0d1424] p-4 ${className}`}>
+      <div className="skeleton h-2.5 w-20 rounded-full mb-4" />
+      <div className="skeleton h-7 w-14 rounded-full mb-2.5" />
+      <div className="skeleton h-2 w-28 rounded-full" />
     </div>
   )
 }
