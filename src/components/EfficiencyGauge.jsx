@@ -11,7 +11,7 @@ export default function EfficiencyGauge({ data }) {
     <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] p-5 flex flex-col h-full">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-200">Efficiency Score</h3>
-        <p className="text-[11px] text-slate-600 mt-0.5">Leads per 100 calls</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Leads per 100 calls</p>
       </div>
       <div className="flex-1 flex flex-col items-center justify-center">
         <svg width="130" height="78" viewBox="0 0 130 78">
@@ -33,7 +33,7 @@ export default function EfficiencyGauge({ data }) {
           </text>
         </svg>
         <span className="text-xs font-bold mt-1" style={{ color }}>{label}</span>
-        <span className="text-[10px] text-slate-700 mt-1">leads / calls × 100</span>
+        <span className="text-[10px] text-slate-400 mt-1">leads / calls × 100</span>
       </div>
     </div>
   )

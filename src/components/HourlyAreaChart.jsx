@@ -7,7 +7,7 @@ export default function HourlyAreaChart({ data }) {
     <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] p-5">
       <div className="mb-5">
         <h3 className="text-sm font-semibold text-slate-200">Calls by Hour</h3>
-        <p className="text-[11px] text-slate-600 mt-0.5">Hourly distribution across all days</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Hourly distribution across all days</p>
       </div>
       <ResponsiveContainer width="100%" height={190}>
         <AreaChart data={data} margin={{ top: 14, right: 8, bottom: 0, left: -20 }}>
@@ -18,8 +18,8 @@ export default function HourlyAreaChart({ data }) {
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-          <XAxis dataKey="label" tick={{ fill: '#475569', fontSize: 9 }} tickLine={false} axisLine={false} interval={2} />
-          <YAxis tick={{ fill: '#475569', fontSize: 10 }} tickLine={false} axisLine={false} />
+          <XAxis dataKey="label" tick={{ fill: '#64748b', fontSize: 9 }} tickLine={false} axisLine={false} interval={2} />
+          <YAxis tick={{ fill: '#64748b', fontSize: 10 }} tickLine={false} axisLine={false} />
           <Tooltip
             contentStyle={{ background: '#0d1424', border: '1px solid rgba(255,255,255,0.08)', borderRadius: 12, fontSize: 12, boxShadow: '0 20px 50px rgba(0,0,0,0.6)' }}
             labelStyle={{ color: '#94a3b8', fontWeight: '600', marginBottom: 6 }}

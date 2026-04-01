@@ -12,7 +12,7 @@ export default function QualityDonut({ quality, total }) {
     <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] p-5">
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-slate-200">Call Quality</h3>
-        <p className="text-[11px] text-slate-600 mt-0.5">Duration quality distribution</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Duration quality distribution</p>
       </div>
       <div className="relative">
         <ResponsiveContainer width="100%" height={170}>
@@ -33,7 +33,7 @@ export default function QualityDonut({ quality, total }) {
         </ResponsiveContainer>
         <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
           <p className="font-mono text-2xl font-bold text-slate-100">{meaningfulPct}%</p>
-          <p className="text-[10px] text-slate-600 mt-0.5">meaningful</p>
+          <p className="text-[10px] text-slate-400 mt-0.5">meaningful</p>
         </div>
       </div>
       <div className="flex flex-col gap-2 mt-3 pt-3 border-t border-white/[0.04]">

@@ -37,7 +37,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
       {/* Breakdown tooltip */}
       {breakdown.length > 0 && (
         <div className="absolute left-0 bottom-full mb-3 w-64 p-3 bg-[#0f1829] rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0">
-          <p className="text-[10px] font-bold text-slate-600 uppercase tracking-widest mb-2.5 border-b border-white/[0.05] pb-2">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5 border-b border-white/[0.05] pb-2">
             Status Breakdown
           </p>
           <div className="space-y-0.5 max-h-[240px] overflow-y-auto custom-scrollbar">
@@ -71,7 +71,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
       <div>
         <p className="font-mono text-[22px] font-bold text-slate-100 tracking-tight leading-none">{value}</p>
         <p className="text-[11px] font-semibold text-slate-500 mt-1.5 leading-none">{label}</p>
-        {subLabel && <p className="text-[10px] text-slate-700 mt-1 leading-none">{subLabel}</p>}
+        {subLabel && <p className="text-[10px] text-slate-500 mt-1 leading-none">{subLabel}</p>}
       </div>
     </div>
   )

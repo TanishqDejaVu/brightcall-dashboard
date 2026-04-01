@@ -18,7 +18,7 @@ function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-2.5 mb-3">
       <div className="w-0.5 h-3.5 bg-blue-500 rounded-full opacity-60" />
-      <span className="text-[10px] font-semibold text-slate-600 uppercase tracking-widest">{children}</span>
+      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{children}</span>
     </div>
   )
 }
@@ -71,7 +71,7 @@ export default function Dashboard() {
         {/* Progress bar */}
         {loading && progress.total > 0 && (
           <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] px-5 py-4">
-            <div className="flex items-center justify-between text-xs text-slate-600 mb-3">
+            <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
               <span>Fetching call data...</span>
               <span className="font-mono text-slate-500">{progress.done} / {progress.total} pages</span>
             </div>
@@ -144,7 +144,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <div className="text-center py-6 border-t border-white/[0.04]">
-          <span className="text-[11px] text-slate-700">Brightcall Analytics · Auto-refreshes every 5 min</span>
+          <span className="text-[11px] text-slate-500">Brightcall Analytics · Auto-refreshes every 5 min</span>
         </div>
 
       </div>

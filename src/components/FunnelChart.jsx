@@ -20,7 +20,7 @@ export default function FunnelChart({ data }) {
     <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] p-5">
       <div className="mb-5">
         <h3 className="text-sm font-semibold text-slate-200">Conversion Funnel</h3>
-        <p className="text-[11px] text-slate-600 mt-0.5">Lead progression through stages</p>
+        <p className="text-[11px] text-slate-400 mt-0.5">Lead progression through stages</p>
       </div>
       <div className="flex items-end gap-2">
         {STEPS.map((step, i) => {
@@ -48,7 +48,7 @@ export default function FunnelChart({ data }) {
                 <div className="absolute inset-x-0 top-0 h-px" style={{ background: step.color, opacity: 0.5 }} />
               </div>
               <p className="font-mono text-sm font-bold text-slate-200 mt-2">{val.toLocaleString()}</p>
-              <p className="text-[10px] text-slate-600 text-center leading-tight">{step.label}</p>
+              <p className="text-[10px] text-slate-400 text-center leading-tight">{step.label}</p>
             </div>
           )
         })}
