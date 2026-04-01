@@ -1,8 +1,8 @@
 function healthColor(value, type) {
   if (type === 'connection_rate') {
-    if (value >= 30) return { label: 'Good', color: 'text-emerald-400 bg-emerald-500/10 border border-emerald-500/20' }
-    if (value >= 20) return { label: 'Fair', color: 'text-amber-400 bg-amber-500/10 border border-amber-500/20' }
-    return { label: 'Low', color: 'text-red-400 bg-red-500/10 border border-red-500/20' }
+    if (value >= 30) return { label: 'Good', color: 'text-emerald-700 dark:text-emerald-400 bg-emerald-100 dark:bg-emerald-500/10 border border-emerald-300 dark:border-emerald-500/20' }
+    if (value >= 20) return { label: 'Fair', color: 'text-amber-700 dark:text-amber-400 bg-amber-100 dark:bg-amber-500/10 border border-amber-300 dark:border-amber-500/20' }
+    return { label: 'Low', color: 'text-red-700 dark:text-red-400 bg-red-100 dark:bg-red-500/10 border border-red-300 dark:border-red-500/20' }
   }
   return null
 }
@@ -25,7 +25,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
 
   return (
     <div
-      className="group relative card-glow rounded-2xl bg-[#0d1424] border border-white/[0.06] p-4 flex flex-col gap-3 opacity-0 animate-fade-up transition-all duration-300 hover:-translate-y-0.5 overflow-hidden cursor-default"
+      className="group relative card-glow rounded-2xl bg-[var(--bg-card)] border border-[var(--bd-card)] p-4 flex flex-col gap-3 opacity-0 animate-fade-up transition-all duration-300 hover:-translate-y-0.5 overflow-hidden cursor-default"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'forwards' }}
     >
       {/* Colored top accent line */}
@@ -36,19 +36,19 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
 
       {/* Breakdown tooltip */}
       {breakdown.length > 0 && (
-        <div className="absolute left-0 bottom-full mb-3 w-64 p-3 bg-[#0f1829] rounded-2xl border border-white/[0.08] shadow-2xl shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0">
-          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5 border-b border-white/[0.05] pb-2">
+        <div className="absolute left-0 bottom-full mb-3 w-64 p-3 bg-[var(--bg-card)] rounded-2xl border border-[var(--bd-card)] shadow-xl shadow-black/20 dark:shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0">
+          <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5 border-b border-slate-200 dark:border-white/[0.05] pb-2">
             Status Breakdown
           </p>
           <div className="space-y-0.5 max-h-[240px] overflow-y-auto custom-scrollbar">
             {breakdown.map((b, i) => (
-              <div key={i} className="flex items-center justify-between px-1.5 py-1 rounded-lg hover:bg-white/[0.04] transition">
-                <span className="text-[11px] text-slate-500 truncate pr-2">{b.label}</span>
-                <span className="text-[11px] font-mono font-bold text-blue-400 flex-shrink-0">{b.count.toLocaleString()}</span>
+              <div key={i} className="flex items-center justify-between px-1.5 py-1 rounded-lg hover:bg-slate-50 dark:hover:bg-white/[0.04] transition">
+                <span className="text-[11px] text-slate-500 dark:text-slate-500 truncate pr-2">{b.label}</span>
+                <span className="text-[11px] font-mono font-bold text-blue-600 dark:text-blue-400 flex-shrink-0">{b.count.toLocaleString()}</span>
               </div>
             ))}
           </div>
-          <div className="absolute top-full left-6 w-2.5 h-2.5 bg-[#0f1829] border-b border-r border-white/[0.08] rotate-45 -translate-y-1.5" />
+          <div className="absolute top-full left-6 w-2.5 h-2.5 bg-[var(--bg-card)] border-b border-r border-[var(--bd-card)] rotate-45 -translate-y-1.5" />
         </div>
       )}
 
@@ -69,9 +69,9 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
 
       {/* Value + labels */}
       <div>
-        <p className="font-mono text-[22px] font-bold text-slate-100 tracking-tight leading-none">{value}</p>
-        <p className="text-[11px] font-semibold text-slate-500 mt-1.5 leading-none">{label}</p>
-        {subLabel && <p className="text-[10px] text-slate-500 mt-1 leading-none">{subLabel}</p>}
+        <p className="font-mono text-[22px] font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-none">{value}</p>
+        <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-1.5 leading-none">{label}</p>
+        {subLabel && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 leading-none">{subLabel}</p>}
       </div>
     </div>
   )

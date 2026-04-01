@@ -2,26 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ── Theme variables ─────────────────────────────── */
+:root {
+  --bg-page:      #f1f5f9;
+  --bg-card:      #ffffff;
+  --bd-card:      rgba(15,23,42,0.09);
+  --navbar-bg:    rgba(255,255,255,0.92);
+  --navbar-bd:    rgba(15,23,42,0.08);
+  --dot:          rgba(15,23,42,0.03);
+}
+
+.dark {
+  --bg-page:      #070b14;
+  --bg-card:      #0d1424;
+  --bd-card:      rgba(255,255,255,0.06);
+  --navbar-bg:    rgba(7,11,20,0.95);
+  --navbar-bd:    rgba(255,255,255,0.06);
+  --dot:          rgba(255,255,255,0.04);
+}
+
+/* ── Base ────────────────────────────────────────── */
 * { box-sizing: border-box; }
 
 body {
-  background: #070b14;
-  color: #f1f5f9;
+  background: var(--bg-page);
   font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* ── Dot grid background ─────────────────────────── */
 .bg-grid {
-  background-image: radial-gradient(rgba(255,255,255,0.04) 1px, transparent 1px);
+  background-image: radial-gradient(var(--dot) 1px, transparent 1px);
   background-size: 28px 28px;
 }
 
+/* ── Card hover glow ─────────────────────────────── */
 .card-glow:hover {
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+}
+.dark .card-glow:hover {
   box-shadow: 0 0 0 1px rgba(59,130,246,0.15), 0 8px 32px rgba(0,0,0,0.5);
 }
 
+/* ── Skeletons ───────────────────────────────────── */
 .skeleton {
+  background: linear-gradient(90deg, #e2e8f0 25%, #f8fafc 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.6s infinite;
+}
+.dark .skeleton {
   background: linear-gradient(
     90deg,
     rgba(255,255,255,0.03) 25%,
@@ -29,15 +59,15 @@ body {
     rgba(255,255,255,0.03) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.6s infinite;
 }
 
 @keyframes shimmer { to { background-position: -200% 0; } }
 
+/* ── Scrollbars ──────────────────────────────────── */
 ::-webkit-scrollbar { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: transparent; }
-::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.15); border-radius: 4px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.3); }
+::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.3); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(148,163,184,0.5); }
 
 .custom-scrollbar::-webkit-scrollbar { width: 3px; }
-.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.1); border-radius: 2px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(148,163,184,0.2); border-radius: 2px; }

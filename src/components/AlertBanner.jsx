@@ -27,9 +27,9 @@ function buildAlerts(data) {
 
 const ICON = { warn: AlertTriangle, info: Info, good: CheckCircle2 }
 const STYLE = {
-  warn: 'bg-amber-500/[0.07] text-amber-400 border-amber-500/20',
-  info: 'bg-blue-500/[0.07] text-blue-400 border-blue-500/20',
-  good: 'bg-emerald-500/[0.07] text-emerald-400 border-emerald-500/20',
+  warn: 'bg-amber-50 dark:bg-amber-500/[0.07] text-amber-700 dark:text-amber-400 border-amber-200 dark:border-amber-500/20',
+  info: 'bg-blue-50 dark:bg-blue-500/[0.07] text-blue-700 dark:text-blue-400 border-blue-200 dark:border-blue-500/20',
+  good: 'bg-emerald-50 dark:bg-emerald-500/[0.07] text-emerald-700 dark:text-emerald-400 border-emerald-200 dark:border-emerald-500/20',
 }
 
 export default function AlertBanner({ data }) {
@@ -43,11 +43,11 @@ export default function AlertBanner({ data }) {
         const Ic = ICON[a.type]
         return (
           <div key={i} className={`flex items-center gap-3 px-4 py-3 rounded-xl border text-[13px] ${STYLE[a.type]}`}>
-            <Ic size={14} className="flex-shrink-0 opacity-75" />
+            <Ic size={14} className="flex-shrink-0 opacity-80" />
             <span className="flex-1">{a.msg}</span>
             <button
               onClick={() => setDismissed(d => [...d, i])}
-              className="opacity-30 hover:opacity-70 transition p-0.5 flex-shrink-0"
+              className="opacity-40 hover:opacity-80 transition p-0.5 flex-shrink-0"
             >
               <X size={12} />
             </button>

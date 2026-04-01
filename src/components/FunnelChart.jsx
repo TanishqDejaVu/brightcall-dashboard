@@ -1,9 +1,9 @@
 const STEPS = [
-  { key: 'totalCalls',   label: 'Total Calls',  color: '#3b82f6' },
-  { key: 'answeredCalls',label: 'Answered',      color: '#6366f1' },
-  { key: 'meaningful',   label: 'Meaningful',    color: '#8b5cf6' },
-  { key: 'followUp',     label: 'Follow Up',     color: '#10b981' },
-  { key: 'appt',         label: 'Appointment',   color: '#f59e0b' },
+  { key: 'totalCalls',    label: 'Total Calls',  color: '#3b82f6' },
+  { key: 'answeredCalls', label: 'Answered',      color: '#6366f1' },
+  { key: 'meaningful',    label: 'Meaningful',    color: '#8b5cf6' },
+  { key: 'followUp',      label: 'Follow Up',     color: '#10b981' },
+  { key: 'appt',          label: 'Appointment',   color: '#f59e0b' },
 ]
 
 export default function FunnelChart({ data }) {
@@ -17,10 +17,10 @@ export default function FunnelChart({ data }) {
   const max = values.totalCalls || 1
 
   return (
-    <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] p-5">
+    <div className="rounded-2xl border border-[var(--bd-card)] bg-[var(--bg-card)] p-5">
       <div className="mb-5">
-        <h3 className="text-sm font-semibold text-slate-200">Conversion Funnel</h3>
-        <p className="text-[11px] text-slate-400 mt-0.5">Lead progression through stages</p>
+        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Conversion Funnel</h3>
+        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Lead progression through stages</p>
       </div>
       <div className="flex items-end gap-2">
         {STEPS.map((step, i) => {
@@ -31,7 +31,7 @@ export default function FunnelChart({ data }) {
           return (
             <div key={step.key} className="flex-1 flex flex-col items-center gap-1 group">
               {i > 0 && (
-                <span className="text-[10px] text-red-500/60 font-mono mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <span className="text-[10px] text-red-500/70 font-mono mb-1 opacity-0 group-hover:opacity-100 transition-opacity">
                   -{drop}%
                 </span>
               )}
@@ -47,8 +47,8 @@ export default function FunnelChart({ data }) {
               >
                 <div className="absolute inset-x-0 top-0 h-px" style={{ background: step.color, opacity: 0.5 }} />
               </div>
-              <p className="font-mono text-sm font-bold text-slate-200 mt-2">{val.toLocaleString()}</p>
-              <p className="text-[10px] text-slate-400 text-center leading-tight">{step.label}</p>
+              <p className="font-mono text-sm font-bold text-slate-800 dark:text-slate-200 mt-2">{val.toLocaleString()}</p>
+              <p className="text-[10px] text-slate-500 dark:text-slate-400 text-center leading-tight">{step.label}</p>
             </div>
           )
         })}

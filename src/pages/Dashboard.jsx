@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useDashboard } from '../hooks/useDashboard'
+import { useTheme } from '../hooks/useTheme'
 import Navbar from '../components/Navbar'
 import KPICard from '../components/KPICard'
 import AlertBanner from '../components/AlertBanner'
@@ -18,7 +19,7 @@ function SectionLabel({ children }) {
   return (
     <div className="flex items-center gap-2.5 mb-3">
       <div className="w-0.5 h-3.5 bg-blue-500 rounded-full opacity-60" />
-      <span className="text-[10px] font-semibold text-slate-500 uppercase tracking-widest">{children}</span>
+      <span className="text-[10px] font-semibold text-slate-500 dark:text-slate-500 uppercase tracking-widest">{children}</span>
     </div>
   )
 }
@@ -27,6 +28,7 @@ export default function Dashboard() {
   const [dateRange, setDateRange] = useState('1w')
   const [selectedAgent, setSelectedAgent] = useState('all')
   const { data, loading, refreshing, progress, error, lastUpdated, refetch } = useDashboard(dateRange, selectedAgent)
+  const { isDark, toggleTheme } = useTheme()
 
   const kpi1 = data ? [
     { icon: PhoneCall, label: 'Answered', value: data.summary.answeredCalls.toLocaleString(), colorClass: 'text-emerald-400', subLabel: 'Connected calls', breakdown: data.breakdowns.answered },
@@ -47,7 +49,7 @@ export default function Dashboard() {
   ] : []
 
   return (
-    <div className="min-h-screen bg-[#070b14] bg-grid text-slate-100">
+    <div className="min-h-screen bg-[var(--bg-page)] bg-grid text-slate-900 dark:text-slate-100">
       <Navbar
         dateRange={dateRange}
         selectedAgent={selectedAgent}
@@ -56,13 +58,15 @@ export default function Dashboard() {
         onRefresh={refetch}
         loading={loading || refreshing}
         lastUpdated={lastUpdated}
+        isDark={isDark}
+        toggleTheme={toggleTheme}
       />
 
       <div className="max-w-[1600px] mx-auto px-5 py-7 space-y-7">
 
         {/* Error */}
         {error && (
-          <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-red-500/[0.08] border border-red-500/20 text-red-400 text-sm">
+          <div className="flex items-center justify-between px-5 py-3 rounded-2xl bg-red-500/[0.08] border border-red-500/20 text-red-600 dark:text-red-400 text-sm">
             <span>{error === 'INVALID_API_KEY' ? 'Invalid API Key — check VITE_BRIGHTCALL_API_KEY in .env' : 'Failed to fetch data. Check your connection.'}</span>
             <button onClick={refetch} className="px-3 py-1.5 rounded-lg bg-red-500/15 hover:bg-red-500/25 transition text-xs font-semibold">Retry</button>
           </div>
@@ -70,12 +74,12 @@ export default function Dashboard() {
 
         {/* Progress bar */}
         {loading && progress.total > 0 && (
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0d1424] px-5 py-4">
+          <div className="rounded-2xl border border-[var(--bd-card)] bg-[var(--bg-card)] px-5 py-4">
             <div className="flex items-center justify-between text-xs text-slate-500 mb-3">
               <span>Fetching call data...</span>
               <span className="font-mono text-slate-500">{progress.done} / {progress.total} pages</span>
             </div>
-            <div className="h-[3px] rounded-full bg-white/[0.05] overflow-hidden">
+            <div className="h-[3px] rounded-full bg-slate-200 dark:bg-white/[0.05] overflow-hidden">
               <div
                 className="h-full rounded-full bg-blue-500 transition-all duration-300"
                 style={{ width: `${Math.round(progress.done / progress.total * 100)}%`, boxShadow: '0 0 8px rgba(59,130,246,0.6)' }}
@@ -111,8 +115,8 @@ export default function Dashboard() {
           <SectionLabel>Call Activity</SectionLabel>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             {loading ? <><SkeletonCard className="lg:col-span-2 h-64" /><SkeletonCard className="h-64" /></> : data && <>
-              <div className="lg:col-span-2"><DailyBarChart data={data.callsByDay} /></div>
-              <QualityDonut quality={data.quality} total={data.summary.totalCalls} />
+              <div className="lg:col-span-2"><DailyBarChart data={data.callsByDay} isDark={isDark} /></div>
+              <QualityDonut quality={data.quality} total={data.summary.totalCalls} isDark={isDark} />
             </>}
           </div>
         </div>
@@ -120,8 +124,8 @@ export default function Dashboard() {
         {/* Charts row 2 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           {loading ? <><SkeletonCard className="h-64" /><SkeletonCard className="h-64" /></> : data && <>
-            <OutcomeChart data={data.outcomeDist} />
-            <HourlyAreaChart data={data.callsByHour} />
+            <OutcomeChart data={data.outcomeDist} isDark={isDark} />
+            <HourlyAreaChart data={data.callsByHour} isDark={isDark} />
           </>}
         </div>
 
@@ -130,7 +134,7 @@ export default function Dashboard() {
           <SectionLabel>Agent Performance</SectionLabel>
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
             {loading ? <><SkeletonCard className="h-64" /><SkeletonCard className="lg:col-span-3 h-64" /></> : data && <>
-              <EfficiencyGauge data={data} />
+              <EfficiencyGauge data={data} isDark={isDark} />
               <div className="lg:col-span-3"><AgentTable agents={data.agentPerformance} /></div>
             </>}
           </div>
@@ -139,12 +143,12 @@ export default function Dashboard() {
         {/* Heatmap */}
         <div>
           <SectionLabel>Activity Heatmap</SectionLabel>
-          {loading ? <SkeletonCard className="h-48" /> : data && <HeatmapGrid heatmap={data.heatmap} />}
+          {loading ? <SkeletonCard className="h-48" /> : data && <HeatmapGrid heatmap={data.heatmap} isDark={isDark} />}
         </div>
 
         {/* Footer */}
-        <div className="text-center py-6 border-t border-white/[0.04]">
-          <span className="text-[11px] text-slate-500">Brightcall Analytics · Auto-refreshes every 5 min</span>
+        <div className="text-center py-6 border-t border-slate-200 dark:border-white/[0.04]">
+          <span className="text-[11px] text-slate-400">Brightcall Analytics · Auto-refreshes every 5 min</span>
         </div>
 
       </div>
