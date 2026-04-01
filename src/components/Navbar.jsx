@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { RefreshCw, User, ChevronDown, Sun, Moon } from 'lucide-react'
 import { format } from 'date-fns'
+import dejavuLogo from '../assets/dejavu-logo.png'
 
 const TABS = [
   { id: '1d', label: '1D' },
@@ -48,17 +49,11 @@ export default function Navbar({ dateRange, selectedAgent, onRangeChange, onAgen
       {/* Left: Logo + filters */}
       <div className="flex items-center gap-5">
         {/* Logo */}
-        <div className="flex items-center gap-2.5">
-          <div className="w-7 h-7 rounded-lg bg-blue-600 flex items-center justify-center shadow-lg shadow-blue-600/30 flex-shrink-0">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-              <path d="M2 10 L5 4 L8 8 L10 5 L13 10" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          <div className="flex items-baseline gap-1.5">
-            <span className="font-bold text-[15px] text-slate-900 dark:text-white tracking-tight">Brightcall</span>
-            <span className="text-[10px] font-medium text-slate-400 dark:text-slate-600 hidden sm:block">Analytics</span>
-          </div>
-        </div>
+        <img
+          src={dejavuLogo}
+          alt="Deja Vu Real Estate"
+          className="h-7 w-auto object-contain dark:invert"
+        />
 
         <div className="w-px h-5 bg-slate-200 dark:bg-white/[0.07]" />
 
