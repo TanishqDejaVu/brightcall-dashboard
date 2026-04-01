@@ -25,7 +25,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
 
   return (
     <div
-      className="group relative card-glow rounded-2xl bg-[var(--bg-card)] border border-[var(--bd-card)] p-4 flex flex-col gap-3 opacity-0 animate-fade-up transition-all duration-300 hover:-translate-y-0.5 overflow-hidden cursor-default"
+      className="group relative card-glow rounded-2xl bg-[var(--bg-card)] border border-[var(--bd-card)] p-4 flex flex-col gap-3 opacity-0 animate-fade-up transition-all duration-300 hover:-translate-y-0.5 cursor-default"
       style={{ animationDelay: `${delay}ms`, animationFillMode: 'forwards' }}
     >
       {/* Colored top accent line */}
