@@ -40,7 +40,7 @@ export default function Dashboard() {
   ] : []
 
   const kpi2 = data ? [
-    { icon: CalendarCheck, label: 'Appointments', value: data.leads.appt.toLocaleString(), colorClass: 'text-blue-400', subLabel: data.leads.leads + ' total qualified' },
+    { icon: CalendarCheck, label: 'Qualified', value: data.leads.leads.toLocaleString(), colorClass: 'text-blue-400', subLabel: data.leads.appt + ' appt · ' + data.leads.qualified + ' qualified' },
     { icon: UserCheck, label: 'Follow Ups', value: data.leads.followUp.toLocaleString(), colorClass: 'text-emerald-400', subLabel: 'Scheduled' },
     { icon: Activity, label: 'Avg Duration', value: data.summary.avgCallDuration + 's', colorClass: 'text-teal-400', subLabel: 'Incl. ringing' },
     { icon: Timer, label: 'Total Talk', value: data.summary.totalTalkTimeFmt, colorClass: 'text-slate-400', subLabel: 'Cumulative' },

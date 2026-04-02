@@ -3,7 +3,7 @@ const STEPS = [
   { key: 'answeredCalls', label: 'Answered',      color: '#6366f1' },
   { key: 'meaningful',    label: 'Meaningful',    color: '#8b5cf6' },
   { key: 'followUp',      label: 'Follow Up',     color: '#10b981' },
-  { key: 'appt',          label: 'Appointment',   color: '#f59e0b' },
+  { key: 'leads',         label: 'Qualified',     color: '#f59e0b' },
 ]
 
 export default function FunnelChart({ data }) {
@@ -12,7 +12,7 @@ export default function FunnelChart({ data }) {
     answeredCalls: data.summary.answeredCalls,
     meaningful:    data.quality.meaningful,
     followUp:      data.leads.followUp,
-    appt:          data.leads.appt,
+    leads:         data.leads.leads,
   }
   const max = values.totalCalls || 1
 

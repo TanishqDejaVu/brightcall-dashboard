@@ -16,8 +16,8 @@ function buildAlerts(data) {
   else if (summary.connectionRate >= 25)
     alerts.push({ type: 'good', msg: `Strong connection rate at ${summary.connectionRate}% — keep it up` })
 
-  if (leads.appt > 0)
-    alerts.push({ type: 'good', msg: `${leads.appt} appointment${leads.appt > 1 ? 's' : ''} booked this period` })
+  if (leads.leads > 0)
+    alerts.push({ type: 'good', msg: `${leads.leads} lead${leads.leads > 1 ? 's' : ''} qualified this period (${leads.appt} appt · ${leads.qualified} qualified)` })
 
   if (leads.leadQualPct < 2 && total > 100)
     alerts.push({ type: 'warn', msg: `Lead qualification at ${leads.leadQualPct}% — focus on meaningful conversations` })
