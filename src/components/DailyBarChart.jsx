@@ -23,7 +23,7 @@ export default function DailyBarChart({ data, isDark }) {
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Total vs answered calls per day</p>
       </div>
       <div className="h-[150px] sm:h-[200px]">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
           <defs>
             <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">

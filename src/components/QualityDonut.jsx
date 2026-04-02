@@ -20,7 +20,7 @@ export default function QualityDonut({ quality, total, isDark }) {
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Duration quality distribution</p>
       </div>
       <div className="relative">
-        <ResponsiveContainer width="100%" height={170}>
+        <ResponsiveContainer width="100%" height={170} minWidth={0}>
           <PieChart>
             <Pie
               data={data} cx="50%" cy="50%"
