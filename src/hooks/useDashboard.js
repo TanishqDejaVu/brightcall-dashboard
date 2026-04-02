@@ -40,6 +40,7 @@ export function useDashboard(dateRange = '1w', selectedAgent = 'all') {
   const [error, setError]             = useState(null)
   const [lastUpdated, setLastUpdated] = useState(cached ? new Date() : null)
   const timerRef = useRef(null)
+  const debounceRef = useRef(null)
 
   const load = useCallback(async () => {
     const hasCache = readCache() !== null
@@ -72,18 +73,20 @@ export function useDashboard(dateRange = '1w', selectedAgent = 'all') {
     load()
     timerRef.current = setInterval(load, 300000) // fallback refresh every 5 min
 
-    // Realtime: reload instantly when calls table changes
+    // Realtime: debounce reloads so a bulk sync (100+ rows) only triggers one refetch
     const channel = realtimeClient
       ? realtimeClient
           .channel('calls-changes')
           .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, () => {
-            load()
+            clearTimeout(debounceRef.current)
+            debounceRef.current = setTimeout(load, 3000)
           })
           .subscribe()
       : null
 
     return () => {
       clearInterval(timerRef.current)
+      clearTimeout(debounceRef.current)
       channel?.unsubscribe()
     }
   }, [load])
