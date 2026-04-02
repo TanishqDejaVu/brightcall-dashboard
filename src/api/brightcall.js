@@ -1,11 +1,7 @@
 import axios from 'axios'
-import { createClient } from '@supabase/supabase-js'
+import { supabase } from '../lib/supabase'
 
 const API_KEY = import.meta.env.VITE_BRIGHTCALL_API_KEY
-const SB_URL = import.meta.env.VITE_SUPABASE_URL
-const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-
-const supabase = (SB_URL && SB_KEY) ? createClient(SB_URL, SB_KEY) : null
 
 const AGENT_NAMES = {
   '827909': 'Telesales 1',

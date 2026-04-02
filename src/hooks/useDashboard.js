@@ -1,11 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchAllCalls, computeMetrics } from '../api/brightcall'
-import { createClient } from '@supabase/supabase-js'
 import { format, subDays, subMonths, subYears } from 'date-fns'
-
-const SB_URL = import.meta.env.VITE_SUPABASE_URL
-const SB_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
-const realtimeClient = (SB_URL && SB_KEY) ? createClient(SB_URL, SB_KEY) : null
+import { supabase as realtimeClient } from '../lib/supabase'
 
 const CACHE_KEY = 'bc_metrics_v1'
 
