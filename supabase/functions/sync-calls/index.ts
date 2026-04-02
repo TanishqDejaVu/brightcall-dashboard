@@ -31,12 +31,6 @@ Deno.serve(async (req) => {
     return new Response('Method not allowed', { status: 405 })
   }
 
-  // Optional: secure with a shared secret header
-  const authHeader = req.headers.get('Authorization')
-  if (authHeader !== `Bearer ${SUPABASE_SERVICE_KEY}`) {
-    return new Response('Unauthorized', { status: 401 })
-  }
-
   const url = new URL(req.url)
   const backfill = url.searchParams.get('backfill') === 'true'
   const { dayFrom, dayTo } = getDateRange(backfill)
