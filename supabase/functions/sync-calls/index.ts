@@ -11,7 +11,7 @@ function buildPayload(dayFrom: string, dayTo: string, page = 1) {
     dateInterval: 'day',
     allUsers: true,
     page,
-    itemsPerPage: 100,
+    itemsPerPage: 500,
     sortBy: 'timestamp',
     sortDirection: 'DESC',
   }
