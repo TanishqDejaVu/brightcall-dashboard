@@ -148,7 +148,7 @@ export default function Dashboard() {
 
         {/* Footer */}
         <div className="text-center py-6 border-t border-slate-200 dark:border-white/[0.04]">
-          <span className="text-[11px] text-slate-400">Brightcall Analytics · Auto-refreshes every 5 min</span>
+          <span className="text-[11px] text-slate-400">Copyright Deja Vu Real Estate. All Rights Reserved.</span>
         </div>
 
       </div>
