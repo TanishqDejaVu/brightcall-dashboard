@@ -33,7 +33,13 @@ Deno.serve(async (req) => {
 
   const url = new URL(req.url)
   const backfill = url.searchParams.get('backfill') === 'true'
-  const { dayFrom, dayTo } = getDateRange(backfill)
+  const paramFrom = url.searchParams.get('from')
+  const paramTo = url.searchParams.get('to')
+
+  // Allow explicit date range via query params (for month-by-month backfill)
+  const { dayFrom, dayTo } = paramFrom && paramTo
+    ? { dayFrom: paramFrom, dayTo: paramTo }
+    : getDateRange(backfill)
 
   console.log(`[sync-calls] Syncing ${dayFrom} → ${dayTo} (backfill: ${backfill})`)
 
