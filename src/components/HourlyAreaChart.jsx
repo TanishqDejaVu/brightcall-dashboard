@@ -1,5 +1,18 @@
 import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ReferenceDot } from 'recharts'
 
+function CustomTooltip({ active, payload, label, c }) {
+  if (!active || !payload?.length) return null
+  const get = key => payload.find(p => p.dataKey === key)?.value ?? 0
+  return (
+    <div style={{ background: c.ttBg, border: `1px solid ${c.ttBd}`, borderRadius: 12, fontSize: 12, boxShadow: c.ttShadow, padding: '10px 14px' }}>
+      <p style={{ color: c.ttLabel, fontWeight: 600, marginBottom: 6 }}>{label}</p>
+      <p style={{ color: '#3b82f6', fontWeight: 500 }}>Total : {get('callCount')}</p>
+      <p style={{ color: '#10b981', fontWeight: 500 }}>Answered : {get('answered')}</p>
+      <p style={{ color: '#f87171', fontWeight: 500 }}>Unanswered : {get('unanswered')}</p>
+    </div>
+  )
+}
+
 function chartColors(isDark) {
   return {
     axis:    isDark ? '#64748b' : '#94a3b8',
@@ -35,11 +48,7 @@ export default function HourlyAreaChart({ data, isDark }) {
           <CartesianGrid strokeDasharray="3 3" stroke={c.grid} vertical={false} />
           <XAxis dataKey="label" tick={{ fill: c.axis, fontSize: 9 }} tickLine={false} axisLine={false} interval={2} />
           <YAxis tick={{ fill: c.axis, fontSize: 10 }} tickLine={false} axisLine={false} />
-          <Tooltip
-            contentStyle={{ background: c.ttBg, border: `1px solid ${c.ttBd}`, borderRadius: 12, fontSize: 12, boxShadow: c.ttShadow }}
-            labelStyle={{ color: c.ttLabel, fontWeight: '600', marginBottom: 6 }}
-            itemStyle={{ color: c.ttItem, fontWeight: 500 }}
-          />
+          <Tooltip content={<CustomTooltip c={c} />} />
           <Area type="monotone" dataKey="callCount" name="Total" stroke="#3b82f6" fill="url(#hourGrad)" strokeWidth={2.5} activeDot={{ r: 5, strokeWidth: 0, fill: '#3b82f6' }} dot={false} animationDuration={1000} />
           <Area type="monotone" dataKey="answered" name="Answered" stroke="#10b981" fill="none" strokeWidth={1.5} dot={false} animationDuration={1000} />
           <Area type="monotone" dataKey="unanswered" name="Unanswered" stroke="#f87171" fill="none" strokeWidth={1.5} dot={false} animationDuration={1000} />
