@@ -175,12 +175,16 @@ export function computeMetrics(allCalls) {
     if (!c.timestamp) continue
     const date = new Date(c.timestamp)
     const hour = date.getHours()
-    byHourMap[hour] = (byHourMap[hour] || 0) + 1
+    if (!byHourMap[hour]) byHourMap[hour] = { total: 0, answered: 0 }
+    byHourMap[hour].total += 1
+    if (c.state === 1) byHourMap[hour].answered += 1
   }
   const callsByHour = Array.from({ length: 24 }, (_, h) => ({
     hour: h,
     label: `${String(h).padStart(2, '0')}:00`,
-    callCount: byHourMap[h] || 0,
+    callCount: byHourMap[h]?.total || 0,
+    answered: byHourMap[h]?.answered || 0,
+    unanswered: (byHourMap[h]?.total || 0) - (byHourMap[h]?.answered || 0),
   }))
 
   // Agent stats

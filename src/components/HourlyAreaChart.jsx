@@ -40,7 +40,9 @@ export default function HourlyAreaChart({ data, isDark }) {
             labelStyle={{ color: c.ttLabel, fontWeight: '600', marginBottom: 6 }}
             itemStyle={{ color: c.ttItem, fontWeight: 500 }}
           />
-          <Area type="monotone" dataKey="callCount" name="Calls" stroke="#3b82f6" fill="url(#hourGrad)" strokeWidth={2.5} activeDot={{ r: 5, strokeWidth: 0, fill: '#3b82f6' }} dot={false} animationDuration={1000} />
+          <Area type="monotone" dataKey="callCount" name="Total" stroke="#3b82f6" fill="url(#hourGrad)" strokeWidth={2.5} activeDot={{ r: 5, strokeWidth: 0, fill: '#3b82f6' }} dot={false} animationDuration={1000} />
+          <Area type="monotone" dataKey="answered" name="Answered" stroke="#10b981" fill="none" strokeWidth={1.5} dot={false} animationDuration={1000} />
+          <Area type="monotone" dataKey="unanswered" name="Unanswered" stroke="#f87171" fill="none" strokeWidth={1.5} dot={false} animationDuration={1000} />
           {peak && (
             <ReferenceDot
               x={peak.label} y={peak.callCount} r={5}
