@@ -22,7 +22,8 @@ export default function FunnelChart({ data }) {
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Conversion Funnel</h3>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Lead progression through stages</p>
       </div>
-      <div className="flex items-end gap-2">
+      <div className="overflow-x-auto -mx-5 px-5 pb-1">
+      <div className="flex items-end gap-2 min-w-[340px]">
         {STEPS.map((step, i) => {
           const val = values[step.key]
           const prev = i > 0 ? values[STEPS[i - 1].key] : val
@@ -52,6 +53,7 @@ export default function FunnelChart({ data }) {
             </div>
           )
         })}
+      </div>
       </div>
     </div>
   )

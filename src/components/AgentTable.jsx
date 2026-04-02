@@ -64,32 +64,32 @@ export default function AgentTable({ agents }) {
         <table className="w-full">
           <thead>
             <tr className="border-b border-slate-100 dark:border-white/[0.04]">
-              <th className="px-4 py-3 text-center text-[10px] text-slate-500 font-semibold uppercase tracking-wider w-12">#</th>
+              <th className="px-2 sm:px-4 py-2.5 sm:py-3 text-center text-[10px] text-slate-500 font-semibold uppercase tracking-wider w-8 sm:w-12">#</th>
               {th('agentName', 'Agent')}
               {th('callsMade', 'Calls', 'right')}
-              {th('connected', 'Connected', 'right')}
-              {th('appointments', 'Appt', 'right')}
-              {th('avgTalkTime', 'Avg Talk', 'right')}
+              <th className="hidden sm:table-cell px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] text-slate-500 font-semibold uppercase tracking-wider cursor-pointer whitespace-nowrap" onClick={() => setSort(s => ({ col: 'connected', dir: s.col === 'connected' && s.dir === 'desc' ? 'asc' : 'desc' }))}>Connected</th>
+              <th className="hidden sm:table-cell px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] text-slate-500 font-semibold uppercase tracking-wider cursor-pointer whitespace-nowrap" onClick={() => setSort(s => ({ col: 'appointments', dir: s.col === 'appointments' && s.dir === 'desc' ? 'asc' : 'desc' }))}>Appt</th>
+              <th className="hidden md:table-cell px-2 sm:px-4 py-2.5 sm:py-3 text-right text-[10px] text-slate-500 font-semibold uppercase tracking-wider cursor-pointer whitespace-nowrap" onClick={() => setSort(s => ({ col: 'avgTalkTime', dir: s.col === 'avgTalkTime' && s.dir === 'desc' ? 'asc' : 'desc' }))}>Avg Talk</th>
               {th('leadQualPct', 'Lead %', 'right')}
             </tr>
           </thead>
           <tbody>
             {sorted.map((a, i) => (
               <tr key={a.agentName} className="border-b border-slate-50 dark:border-white/[0.03] hover:bg-slate-50 dark:hover:bg-white/[0.02] transition">
-                <td className="px-4 py-3.5 text-center">
+                <td className="px-2 sm:px-4 py-2.5 sm:py-3.5 text-center">
                   <RankMedal rank={i} />
                 </td>
-                <td className="px-4 py-3.5">
-                  <div className="flex items-center gap-2.5">
+                <td className="px-2 sm:px-4 py-2.5 sm:py-3.5">
+                  <div className="flex items-center gap-1.5 sm:gap-2.5">
                     <Initials name={a.agentName} />
-                    <span className="font-semibold text-slate-700 dark:text-slate-300 text-[13px] whitespace-nowrap">{a.agentName}</span>
+                    <span className="font-semibold text-slate-700 dark:text-slate-300 text-[12px] sm:text-[13px] whitespace-nowrap">{a.agentName}</span>
                   </div>
                 </td>
-                <td className="px-4 py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.callsMade.toLocaleString()}</td>
-                <td className="px-4 py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.connected.toLocaleString()}</td>
-                <td className="px-4 py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.appointments}</td>
-                <td className="px-4 py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.avgTalkTime}s</td>
-                <td className="px-4 py-3.5 text-right"><LeadBadge pct={a.leadQualPct} /></td>
+                <td className="px-2 sm:px-4 py-2.5 sm:py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[12px] sm:text-[13px]">{a.callsMade.toLocaleString()}</td>
+                <td className="hidden sm:table-cell px-2 sm:px-4 py-2.5 sm:py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.connected.toLocaleString()}</td>
+                <td className="hidden sm:table-cell px-2 sm:px-4 py-2.5 sm:py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.appointments}</td>
+                <td className="hidden md:table-cell px-2 sm:px-4 py-2.5 sm:py-3.5 font-mono text-slate-600 dark:text-slate-400 text-right text-[13px]">{a.avgTalkTime}s</td>
+                <td className="px-2 sm:px-4 py-2.5 sm:py-3.5 text-right"><LeadBadge pct={a.leadQualPct} /></td>
               </tr>
             ))}
           </tbody>

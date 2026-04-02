@@ -23,7 +23,8 @@ export default function HourlyAreaChart({ data, isDark }) {
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Calls by Hour</h3>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Hourly distribution across all days</p>
       </div>
-      <ResponsiveContainer width="100%" height={190}>
+      <div className="h-[140px] sm:h-[190px]">
+      <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 14, right: 8, bottom: 0, left: -20 }}>
           <defs>
             <linearGradient id="hourGrad" x1="0" y1="0" x2="0" y2="1">
@@ -49,6 +50,7 @@ export default function HourlyAreaChart({ data, isDark }) {
           )}
         </AreaChart>
       </ResponsiveContainer>
+      </div>
     </div>
   )
 }

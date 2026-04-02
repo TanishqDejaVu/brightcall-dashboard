@@ -22,7 +22,8 @@ export default function DailyBarChart({ data, isDark }) {
         <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Daily Call Volume</h3>
         <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Total vs answered calls per day</p>
       </div>
-      <ResponsiveContainer width="100%" height={200}>
+      <div className="h-[150px] sm:h-[200px]">
+      <ResponsiveContainer width="100%" height="100%">
         <ComposedChart data={data} margin={{ top: 4, right: 8, bottom: 0, left: -20 }}>
           <defs>
             <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
@@ -44,6 +45,7 @@ export default function DailyBarChart({ data, isDark }) {
           <Line type="monotone" dataKey="answeredCalls" name="Answered" stroke="#10b981" strokeWidth={2.5} dot={{ r: 3, fill: '#10b981', strokeWidth: 0 }} activeDot={{ r: 5, strokeWidth: 0 }} animationDuration={1000} />
         </ComposedChart>
       </ResponsiveContainer>
+      </div>
     </div>
   )
 }

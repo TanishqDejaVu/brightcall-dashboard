@@ -28,9 +28,9 @@ export default function HeatmapGrid({ heatmap, isDark }) {
       </div>
       <div className="overflow-x-auto">
         {/* Hour labels */}
-        <div className="flex gap-1 mb-1.5 ml-10">
+        <div className="flex gap-1 mb-1.5 ml-7 sm:ml-10">
           {HOURS.map(h => (
-            <div key={h} className="w-5 text-center text-[8px] text-slate-400 dark:text-slate-500 flex-shrink-0">
+            <div key={h} className="w-3.5 sm:w-5 text-center text-[8px] text-slate-400 dark:text-slate-500 flex-shrink-0">
               {h % 3 === 0 ? h : ''}
             </div>
           ))}
@@ -38,13 +38,13 @@ export default function HeatmapGrid({ heatmap, isDark }) {
         {/* Rows */}
         {heatmap.map((row, di) => (
           <div key={di} className="flex items-center gap-1 mb-1">
-            <div className="w-9 text-[9px] text-slate-500 dark:text-slate-400 text-right pr-1.5 flex-shrink-0 font-medium">
+            <div className="w-7 sm:w-9 text-[9px] text-slate-500 dark:text-slate-400 text-right pr-1.5 flex-shrink-0 font-medium">
               {DAY_LABELS[di]}
             </div>
             {row.map((val, hi) => (
               <div
                 key={hi}
-                className="w-5 h-5 rounded flex-shrink-0 cursor-pointer transition-transform hover:scale-125"
+                className="w-3.5 h-3.5 sm:w-5 sm:h-5 rounded flex-shrink-0 cursor-pointer transition-transform hover:scale-125"
                 style={cellStyle(val, maxVal, isDark)}
                 onMouseEnter={() => setTooltip({ day: DAY_LABELS[di], hour: hi, val })}
                 onMouseLeave={() => setTooltip(null)}

@@ -36,7 +36,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
 
       {/* Breakdown tooltip */}
       {breakdown.length > 0 && (
-        <div className="absolute left-0 bottom-full mb-3 w-64 p-3 bg-[var(--bg-card)] rounded-2xl border border-[var(--bd-card)] shadow-xl shadow-black/20 dark:shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0">
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-3 w-[min(256px,calc(100vw-1.5rem))] p-3 bg-[var(--bg-card)] rounded-2xl border border-[var(--bd-card)] shadow-xl shadow-black/20 dark:shadow-black/60 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-[100] translate-y-2 group-hover:translate-y-0">
           <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2.5 border-b border-slate-200 dark:border-white/[0.05] pb-2">
             Status Breakdown
           </p>
@@ -48,7 +48,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
               </div>
             ))}
           </div>
-          <div className="absolute top-full left-6 w-2.5 h-2.5 bg-[var(--bg-card)] border-b border-r border-[var(--bd-card)] rotate-45 -translate-y-1.5" />
+          <div className="absolute top-full left-1/2 -translate-x-1/2 w-2.5 h-2.5 bg-[var(--bg-card)] border-b border-r border-[var(--bd-card)] rotate-45 -translate-y-1.5" />
         </div>
       )}
 
@@ -69,7 +69,7 @@ export default function KPICard({ icon: Icon, label, value, subLabel, colorClass
 
       {/* Value + labels */}
       <div>
-        <p className="font-mono text-[22px] font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-none">{value}</p>
+        <p className="font-mono text-[clamp(16px,4vw,22px)] font-bold text-slate-900 dark:text-slate-100 tracking-tight leading-none">{value}</p>
         <p className="text-[11px] font-semibold text-slate-500 dark:text-slate-400 mt-1.5 leading-none">{label}</p>
         {subLabel && <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 leading-none">{subLabel}</p>}
       </div>

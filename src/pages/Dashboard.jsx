@@ -62,7 +62,7 @@ export default function Dashboard() {
         toggleTheme={toggleTheme}
       />
 
-      <div className="max-w-[1600px] mx-auto px-5 py-7 space-y-7">
+      <div className="max-w-[1600px] mx-auto px-3 sm:px-5 py-5 sm:py-7 space-y-4 sm:space-y-7">
 
         {/* Error */}
         {error && (
@@ -94,11 +94,11 @@ export default function Dashboard() {
         {/* KPI rows */}
         <div>
           <SectionLabel>Key Metrics</SectionLabel>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 mb-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3 mb-2 sm:mb-3">
             {loading ? Array.from({length:6}).map((_,i)=><SkeletonCard key={i}/>) :
               kpi1.map((k, i) => <KPICard key={k.label} {...k} delay={i * 60} />)}
           </div>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 sm:gap-3">
             {loading ? Array.from({length:6}).map((_,i)=><SkeletonCard key={i}/>) :
               kpi2.map((k, i) => <KPICard key={k.label} {...k} delay={360 + i * 60} />)}
           </div>
