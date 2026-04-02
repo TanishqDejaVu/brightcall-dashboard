@@ -20,7 +20,7 @@ function buildPayload(dayFrom: string, dayTo: string, page = 1) {
 function getDateRange(backfill: boolean) {
   const today = new Date()
   const from = new Date(today)
-  from.setDate(from.getDate() - (backfill ? 180 : 2))
+  from.setDate(from.getDate() - (backfill ? 180 : 0))
   const fmt = (d: Date) => d.toISOString().split('T')[0]
   return { dayFrom: fmt(from), dayTo: fmt(today) }
 }
