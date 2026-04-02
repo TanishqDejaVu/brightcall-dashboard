@@ -32,9 +32,19 @@ export default function HourlyAreaChart({ data, isDark }) {
 
   return (
     <div className="rounded-2xl border border-[var(--bd-card)] bg-[var(--bg-card)] p-5">
-      <div className="mb-5">
-        <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Calls by Hour</h3>
-        <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Hourly distribution across all days</p>
+      <div className="flex items-start justify-between mb-5">
+        <div>
+          <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">Calls by Hour</h3>
+          <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-0.5">Hourly distribution across all days</p>
+        </div>
+        <div className="flex items-center gap-3 pt-0.5">
+          {[['#3b82f6', 'Total'], ['#10b981', 'Answered'], ['#f87171', 'Unanswered']].map(([color, label]) => (
+            <div key={label} className="flex items-center gap-1.5">
+              <div className="w-5 h-0.5 rounded-full" style={{ background: color }} />
+              <span className="text-[10px] text-slate-500 dark:text-slate-400">{label}</span>
+            </div>
+          ))}
+        </div>
       </div>
       <div className="h-[140px] sm:h-[190px]">
       <ResponsiveContainer width="100%" height="100%">
