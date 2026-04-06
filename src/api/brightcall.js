@@ -114,9 +114,9 @@ export function computeMetrics(allCalls) {
   // Busy comes from tags array, not outcomeTag
   const busy      = calls.filter(c => (c.tags || []).includes('Busy')).length
 
-  const short      = calls.filter(c => (c.talkTime || 0) < 10).length
-  const medium     = calls.filter(c => (c.talkTime || 0) >= 10 && (c.talkTime || 0) < 30).length
-  const meaningful = calls.filter(c => (c.talkTime || 0) >= 30).length
+  const short      = answeredCalls.filter(c => (c.talkTime || 0) > 0 && (c.talkTime || 0) < 10).length
+  const medium     = answeredCalls.filter(c => (c.talkTime || 0) >= 10 && (c.talkTime || 0) < 30).length
+  const meaningful = answeredCalls.filter(c => (c.talkTime || 0) >= 30).length
 
   // Leads = Appointment Scheduled + Qualified
   const leads = appt + qualified
@@ -231,7 +231,7 @@ export function computeMetrics(allCalls) {
       callsPerUniqueNumber,
       uniqueNumbers,
     },
-    quality: { short, medium, meaningful, shortPct: total>0?Math.round(short/total*100):0, mediumPct: total>0?Math.round(medium/total*100):0, meaningfulPct: total>0?Math.round(meaningful/total*100):0 },
+    quality: { short, medium, meaningful, shortPct: answered>0?Math.round(short/answered*100):0, mediumPct: answered>0?Math.round(medium/answered*100):0, meaningfulPct: answered>0?Math.round(meaningful/answered*100):0 },
     outcomeDist: outcomeDistArr,
     callsByDay,
     callsByHour,
