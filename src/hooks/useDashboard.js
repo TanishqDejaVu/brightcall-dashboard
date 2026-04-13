@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
 import { fetchAllCalls, computeMetrics } from '../api/brightcall'
 import { format, subDays, subMonths, subYears } from 'date-fns'
-import { supabase as realtimeClient } from '../lib/supabase'
+// NOTE: Supabase Realtime (postgres_changes) has been disabled to avoid exceeding
+// the free-plan Realtime Message quota (was at 157% / 3.1M messages).
+// The dashboard now refreshes via polling only (REST queries don't count as Realtime messages).
 
 const CACHE_KEY = 'bc_metrics_v1'
 
@@ -67,23 +69,13 @@ export function useDashboard(dateRange = '1w', selectedAgent = 'all') {
 
   useEffect(() => {
     load()
-    timerRef.current = setInterval(load, 300000) // fallback refresh every 5 min
-
-    // Realtime: debounce reloads so a bulk sync (100+ rows) only triggers one refetch
-    const channel = realtimeClient
-      ? realtimeClient
-          .channel('calls-changes')
-          .on('postgres_changes', { event: '*', schema: 'public', table: 'calls' }, () => {
-            clearTimeout(debounceRef.current)
-            debounceRef.current = setTimeout(load, 3000)
-          })
-          .subscribe()
-      : null
+    // Polling every 5 minutes — uses standard REST queries (zero Realtime message cost)
+    // postgres_changes subscription has been removed to stay within the free plan quota
+    timerRef.current = setInterval(load, 300000)
 
     return () => {
       clearInterval(timerRef.current)
       clearTimeout(debounceRef.current)
-      channel?.unsubscribe()
     }
   }, [load])
 
