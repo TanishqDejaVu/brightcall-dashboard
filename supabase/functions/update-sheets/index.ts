@@ -68,11 +68,13 @@ async function sheetRead(token: string, range: string, unformatted = false): Pro
   const res = await fetch(`${SHEETS_BASE}/values/${encodeURIComponent(range)}${qs}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  return ((await res.json()).values ?? []) as Row[]
+  const json = await res.json()
+  if (!res.ok) throw new Error(`sheetRead "${range}" failed ${res.status}: ${json.error?.message ?? JSON.stringify(json)}`)
+  return (json.values ?? []) as Row[]
 }
 
 async function sheetAppend(token: string, range: string, values: Row[]): Promise<void> {
-  await fetch(
+  const res = await fetch(
     `${SHEETS_BASE}/values/${encodeURIComponent(range)}:append?valueInputOption=USER_ENTERED&insertDataOption=INSERT_ROWS`,
     {
       method: 'POST',
@@ -80,15 +82,16 @@ async function sheetAppend(token: string, range: string, values: Row[]): Promise
       body: JSON.stringify({ range, majorDimension: 'ROWS', values }),
     }
   )
+  const json = await res.json()
+  if (!res.ok) throw new Error(`sheetAppend "${range}" failed ${res.status}: ${json.error?.message ?? JSON.stringify(json)}`)
 }
 
 async function sheetBatchWrite(token: string, updates: { range: string; values: Row[] }[]): Promise<void> {
-  if (updates.length === 0) return
-  // Sheets API allows max 500 ranges per batchUpdate
+  if (updates.length === 0) { console.warn('[sheetBatchWrite] called with 0 updates — skipping'); return }
   const CHUNK = 500
   for (let i = 0; i < updates.length; i += CHUNK) {
     const slice = updates.slice(i, i + CHUNK)
-    await fetch(`${SHEETS_BASE}/values:batchUpdate`, {
+    const res = await fetch(`${SHEETS_BASE}/values:batchUpdate`, {
       method: 'POST',
       headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -96,6 +99,8 @@ async function sheetBatchWrite(token: string, updates: { range: string; values: 
         data: slice.map(u => ({ range: u.range, majorDimension: 'ROWS', values: u.values })),
       }),
     })
+    const json = await res.json()
+    if (!res.ok) throw new Error(`sheetBatchWrite failed ${res.status}: ${json.error?.message ?? JSON.stringify(json)}`)
   }
 }
 
@@ -373,23 +378,29 @@ async function updateTopline(token: string, callsByMonth: Record<string, Call[]>
 
   const updates: { range: string; values: Row[] }[] = []
 
+  console.log(`[Topline] headerRow sample: ${JSON.stringify(headerRow.slice(0, 6))}`)
+  console.log(`[Topline] labelToRow keys: ${Object.keys(labelToRow).join(', ')}`)
+
   for (const [month, calls] of Object.entries(callsByMonth)) {
     const colIdx = headerRow.findIndex(c => String(c ?? '').trim() === month)
     if (colIdx < 0) {
-      console.warn(`[update-sheets] Topline: no column for "${month}" — add it to the header row`)
+      console.warn(`[Topline] no column found for "${month}" in headerRow — check tab name and header row content`)
       continue
     }
     const col    = String.fromCharCode(65 + colIdx)
+    console.log(`[Topline] writing month "${month}" → column ${col}, building updates from ${Object.keys(labelToRow).length} labels`)
     const values = metricValues(computeMetrics(calls))
 
     for (const [label, value] of Object.entries(values)) {
       const rowNum = labelToRow[label]
       if (rowNum) updates.push({ range: `Topline!${col}${rowNum}`, values: [[value]] })
+      else console.warn(`[Topline] label not found in sheet: "${label}"`)
     }
   }
 
+  console.log(`[Topline] total updates to write: ${updates.length}`)
   await sheetBatchWrite(token, updates)
-  console.log(`[update-sheets] Topline: updated ${Object.keys(callsByMonth).length} month column(s)`)
+  console.log(`[Topline] done`)
 }
 
 // Week of month: W1=1-7, W2=8-14, W3=15-21, W4=22-31
@@ -460,8 +471,11 @@ async function updateSummary(token: string, callsByDate: Record<string, Call[]>)
     }
   }
 
+  console.log(`[Summary] colMap: ${JSON.stringify(colMap)}`)
+  console.log(`[Summary] byWeek keys: ${Object.keys(byWeek).join(', ')}`)
+  console.log(`[Summary] total updates to write: ${updates.length}`)
   await sheetBatchWrite(token, updates)
-  console.log(`[update-sheets] Summary: updated ${Object.keys(byWeek).length} week column(s)`)
+  console.log(`[Summary] done`)
 }
 
 // ── Main handler ───────────────────────────────────────────────────────────────
