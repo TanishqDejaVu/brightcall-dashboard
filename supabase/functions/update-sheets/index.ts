@@ -360,9 +360,11 @@ async function updateAgent(token: string, callsByMonth: Record<string, Call[]>):
 
 async function updateTopline(token: string, callsByMonth: Record<string, Call[]>): Promise<void> {
   const toplineRows = await sheetRead(token, 'Topline!A:Z')
-  const headerRow   = (toplineRows[1] ?? []) as string[]
 
-  // Build label → sheet row number map from column A
+  // Find header row dynamically — the row where col A = "Metrics"
+  const headerRow = (toplineRows.find(r => String(r[0] ?? '').trim() === 'Metrics') ?? []) as string[]
+
+  // Build label → sheet row number map from column A (skipping the header row itself)
   const labelToRow: Record<string, number> = {}
   for (let r = 0; r < toplineRows.length; r++) {
     const label = String(toplineRows[r][0] ?? '').trim()
@@ -402,18 +404,26 @@ function weekLabel(d: Date): string {
 async function updateSummary(token: string, callsByDate: Record<string, Call[]>): Promise<void> {
   const summaryRows = await sheetRead(token, 'Summary!A:Z')
 
-  // Row 2 (idx 1): month headers — propagate across merged empty cells
-  // Row 3 (idx 2): week labels (W1–W4)
-  const monthHeaderRow = (summaryRows[1] ?? []) as string[]
-  const weekHeaderRow  = (summaryRows[2] ?? []) as string[]
+  const MONTH_NAMES = new Set(['January','February','March','April','May','June','July','August','September','October','November','December'])
+
+  // Find header rows dynamically regardless of blank rows above
+  const monthHeaderRow = (summaryRows.find(r => r.some(c => MONTH_NAMES.has(String(c ?? '').trim()))) ?? []) as string[]
+  const weekHeaderRow  = (summaryRows.find(r => r.some(c => /^W[1-4]$/.test(String(c ?? '').trim()))) ?? []) as string[]
 
   // Build column map: "April_W2" → column letter
+  // Blank separator columns (empty month AND empty week) reset the current month
+  // so that orphaned W1/W2 columns at the end don't map to the previous month.
   const colMap: Record<string, string> = {}
   let currentMonth = ''
   for (let c = 1; c < monthHeaderRow.length; c++) {
     const m = String(monthHeaderRow[c] ?? '').trim()
-    if (m) currentMonth = m
     const w = String(weekHeaderRow[c] ?? '').trim()
+    if (m) {
+      currentMonth = m
+    } else if (!w) {
+      currentMonth = '' // separator column — break month group
+      continue
+    }
     if (currentMonth && w) {
       colMap[`${currentMonth}_${w}`] = String.fromCharCode(65 + c)
     }
