@@ -1,14 +1,13 @@
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-const SUPABASE_URL        = Deno.env.get('SUPABASE_URL')!
+const SUPABASE_URL         = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const SA_EMAIL            = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_EMAIL')!
-const PRIVATE_KEY_RAW     = Deno.env.get('GOOGLE_PRIVATE_KEY')!
-const SHEET_ID            = Deno.env.get('GOOGLE_SHEET_ID')!
+const SA_EMAIL             = Deno.env.get('GOOGLE_SERVICE_ACCOUNT_EMAIL')!
+const PRIVATE_KEY_RAW      = Deno.env.get('GOOGLE_PRIVATE_KEY')!
+const SHEET_ID             = Deno.env.get('GOOGLE_SHEET_ID')!
 
 const SHEETS_BASE = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}`
 
-// Agent ID → display info
 const AGENT_MAP: Record<string, { name: string; slug: string }> = {
   '827909': { name: 'Sana',     slug: 'telesales1' },
   '827910': { name: 'Huzaifa', slug: 'telesales2' },
@@ -68,16 +67,7 @@ async function sheetRead(token: string, range: string): Promise<Row[]> {
   const res = await fetch(`${SHEETS_BASE}/values/${encodeURIComponent(range)}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
-  const json = await res.json()
-  return (json.values ?? []) as Row[]
-}
-
-async function sheetWrite(token: string, range: string, values: Row[]): Promise<void> {
-  await fetch(`${SHEETS_BASE}/values/${encodeURIComponent(range)}?valueInputOption=USER_ENTERED`, {
-    method: 'PUT',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ range, majorDimension: 'ROWS', values }),
-  })
+  return ((await res.json()).values ?? []) as Row[]
 }
 
 async function sheetAppend(token: string, range: string, values: Row[]): Promise<void> {
@@ -92,19 +82,26 @@ async function sheetAppend(token: string, range: string, values: Row[]): Promise
 }
 
 async function sheetBatchWrite(token: string, updates: { range: string; values: Row[] }[]): Promise<void> {
-  await fetch(`${SHEETS_BASE}/values:batchUpdate`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      valueInputOption: 'USER_ENTERED',
-      data: updates.map(u => ({ range: u.range, majorDimension: 'ROWS', values: u.values })),
-    }),
-  })
+  if (updates.length === 0) return
+  // Sheets API allows max 500 ranges per batchUpdate
+  const CHUNK = 500
+  for (let i = 0; i < updates.length; i += CHUNK) {
+    const slice = updates.slice(i, i + CHUNK)
+    await fetch(`${SHEETS_BASE}/values:batchUpdate`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        valueInputOption: 'USER_ENTERED',
+        data: slice.map(u => ({ range: u.range, majorDimension: 'ROWS', values: u.values })),
+      }),
+    })
+  }
 }
 
 // ── Metric computation ─────────────────────────────────────────────────────────
 
 interface Call {
+  timestamp: string
   state: number
   talkTime: number
   totalTime: number
@@ -120,9 +117,9 @@ const is = (c: Call, tag: string) =>
 const secStr = (n: number) => `${Math.round(n)} sec`
 
 function computeMetrics(raw: Call[]) {
-  const calls   = raw.filter(c => VALID_AGENTS.has(String(c.involvedAgent1Id)))
-  const total   = calls.length
-  const ans     = calls.filter(c => c.state === 1)
+  const calls    = raw.filter(c => VALID_AGENTS.has(String(c.involvedAgent1Id)))
+  const total    = calls.length
+  const ans      = calls.filter(c => c.state === 1)
   const ansCount = ans.length
   const totalTalk = ans.reduce((s, c) => s + (c.talkTime ?? 0), 0)
   const totalDur  = calls.reduce((s, c) => s + (c.totalTime ?? 0), 0)
@@ -136,12 +133,12 @@ function computeMetrics(raw: Call[]) {
 
   return {
     total, ansCount, noAnswer, busy, followUp, appt, qualified, short, meaningful,
-    connRate:    total   > 0 ? Math.round(ansCount / total * 1000) / 1000 : 0,
-    avgDur:      total   > 0 ? secStr(totalDur / total) : '0 sec',
-    avgTalk:     ansCount > 0 ? secStr(totalTalk / ansCount) : '0 sec',
+    connRate:     total    > 0 ? Math.round(ansCount / total * 1000) / 1000 : 0,
+    avgDur:       total    > 0 ? secStr(totalDur / total)             : '0 sec',
+    avgTalk:      ansCount > 0 ? secStr(totalTalk / ansCount)         : '0 sec',
     totalTalkStr: secStr(totalTalk),
-    leadPct:     total > 0 ? appt / total : 0,
-    callsPerLead: appt > 0 ? Math.round(total / appt * 100) / 100 : 0,
+    leadPct:      total    > 0 ? appt / total                         : 0,
+    callsPerLead: appt     > 0 ? Math.round(total / appt * 100) / 100 : 0,
   }
 }
 
@@ -150,7 +147,6 @@ function computeAgentMetrics(raw: Call[]) {
     name: string; slug: string; calls: number; answered: number
     talkTime: number; followUp: number; appt: number; qualified: number
   }> = {}
-
   for (const c of raw) {
     const aid = String(c.involvedAgent1Id)
     if (!AGENT_MAP[aid]) continue
@@ -158,207 +154,281 @@ function computeAgentMetrics(raw: Call[]) {
     const s = map[aid]
     s.calls++
     if (c.state === 1) { s.answered++; s.talkTime += c.talkTime ?? 0 }
-    if (is(c, 'Follow Up'))              s.followUp++
+    if (is(c, 'Follow Up'))             s.followUp++
     if (is(c, 'Appointment Scheduled')) s.appt++
     if (is(c, 'Qualified'))             s.qualified++
   }
-
   return Object.values(map)
 }
 
 // ── Date helpers ───────────────────────────────────────────────────────────────
 
-// Excel epoch is Dec 30 1899
 const EXCEL_EPOCH = new Date(1899, 11, 30).getTime()
+const toExcelSerial = (d: Date) => Math.floor((d.getTime() - EXCEL_EPOCH) / 86400000)
+const monthLabel    = (d: Date) => d.toLocaleString('en-US', { month: 'long' })
+const fmtDate       = (d: Date) => d.toISOString().split('T')[0]
 
-function toExcelSerial(d: Date): number {
-  return Math.floor((d.getTime() - EXCEL_EPOCH) / 86400000)
+// ── Supabase: fetch all calls with pagination ─────────────────────────────────
+
+async function fetchAllCalls(supabase: ReturnType<typeof createClient>, from: string, to: string): Promise<Call[]> {
+  const PAGE = 1000
+  const all: Call[] = []
+  let page = 0
+  while (true) {
+    const { data, error } = await supabase
+      .from('calls')
+      .select('*')
+      .gte('timestamp', `${from}T00:00:00Z`)
+      .lte('timestamp', `${to}T23:59:59Z`)
+      .order('timestamp', { ascending: true })
+      .range(page * PAGE, (page + 1) * PAGE - 1)
+    if (error) throw new Error(`Supabase fetch failed: ${error.message}`)
+    if (data) all.push(...data)
+    if (!data || data.length < PAGE) break
+    page++
+  }
+  return all
 }
 
-function monthLabel(d: Date): string {
-  return d.toLocaleString('en-US', { month: 'long' })
-}
+// ── Sheet updaters ─────────────────────────────────────────────────────────────
 
-function fmtDate(d: Date): string {
-  return d.toISOString().split('T')[0]
-}
+async function updateDaily(token: string, callsByDate: Record<string, Call[]>): Promise<void> {
+  const existingRows = await sheetRead(token, 'Daily!A:M')
 
-// ── Main handler ───────────────────────────────────────────────────────────────
+  // Build a map: excelSerial → row index (1-indexed)
+  const serialToRowNum: Record<number, number> = {}
+  for (let i = 0; i < existingRows.length; i++) {
+    const s = Number(existingRows[i][1])
+    if (!isNaN(s) && s > 40000) serialToRowNum[s] = i + 1
+  }
 
-Deno.serve(async (req) => {
-  if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
+  const updates: { range: string; values: Row[] }[] = []
+  const newRows: Row[] = []
 
-  try {
-    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
-    const token    = await getGoogleToken()
-
-    const now       = new Date()
-    const yesterday = new Date(now)
-    yesterday.setDate(yesterday.getDate() - 1)
-
-    const yStr       = fmtDate(yesterday)
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
-    const monthStr   = monthLabel(now)
-
-    console.log(`[update-sheets] Running for ${yStr}, month: ${monthStr}`)
-
-    // ── Fetch calls from Supabase ────────────────────────────────────────────────
-
-    const [{ data: dayCalls }, { data: monthCalls }] = await Promise.all([
-      supabase.from('calls').select('*')
-        .gte('timestamp', `${yStr}T00:00:00Z`)
-        .lte('timestamp', `${yStr}T23:59:59Z`),
-      supabase.from('calls').select('*')
-        .gte('timestamp', `${fmtDate(monthStart)}T00:00:00Z`)
-        .lte('timestamp', `${fmtDate(now)}T23:59:59Z`),
-    ])
-
-    const dm     = computeMetrics(dayCalls ?? [])
-    const mm     = computeMetrics(monthCalls ?? [])
-    const agents = computeAgentMetrics(monthCalls ?? [])
-
-    // ── 1. Daily sheet ───────────────────────────────────────────────────────────
-    // Columns: A(blank) B(Date) C(Total) D(Connected) E(No Answer) F(Busy)
-    //          G(Qualified=Appt) H(Conn%) I(AvgDur) J(AvgTalk) K(TotalTalk)
-    //          L(FollowUp) M(Appt Scheduled)
-
-    const dailyRows  = await sheetRead(token, 'Daily!A:M')
-    const ySerial    = toExcelSerial(yesterday)
-    const dailyRowIdx = dailyRows.findIndex(r => Number(r[1]) === ySerial)
-
-    const dailyRow: Row = [
-      '', ySerial, dm.total, dm.ansCount, dm.noAnswer, dm.busy,
+  const sortedDates = Object.keys(callsByDate).sort()
+  for (const dateStr of sortedDates) {
+    const d   = new Date(dateStr)
+    const dm  = computeMetrics(callsByDate[dateStr])
+    const ser = toExcelSerial(d)
+    const row: Row = [
+      '', ser, dm.total, dm.ansCount, dm.noAnswer, dm.busy,
       dm.appt, dm.connRate, dm.avgDur, dm.avgTalk, dm.totalTalkStr,
       dm.followUp, dm.appt,
     ]
-
-    if (dailyRowIdx >= 0) {
-      await sheetWrite(token, `Daily!A${dailyRowIdx + 1}:M${dailyRowIdx + 1}`, [dailyRow])
-      console.log(`[update-sheets] Daily: updated row ${dailyRowIdx + 1}`)
+    const rowNum = serialToRowNum[ser]
+    if (rowNum) {
+      updates.push({ range: `Daily!A${rowNum}:M${rowNum}`, values: [row] })
     } else {
-      await sheetAppend(token, 'Daily!A:M', [dailyRow])
-      console.log('[update-sheets] Daily: appended new row')
+      newRows.push(row)
     }
+  }
 
-    // ── 2. Monthly sheet ─────────────────────────────────────────────────────────
-    // Columns: A(blank) B(Month) C(Total) D(Connected) E(No Answer) F(Busy)
-    //          G(Qualified=Appt) H(Conn%) I(AvgDur) J(AvgTalk) K(TotalTalk)
+  await sheetBatchWrite(token, updates)
+  if (newRows.length > 0) await sheetAppend(token, 'Daily!A:M', newRows)
 
-    const monthlyRows = await sheetRead(token, 'Monthly!A:K')
-    const monthlyIdx  = monthlyRows.findIndex(r => String(r[1] ?? '').trim() === monthStr)
+  console.log(`[update-sheets] Daily: ${updates.length} updated, ${newRows.length} appended`)
+}
 
-    const monthlyRow: Row = [
-      '', monthStr, mm.total, mm.ansCount, mm.noAnswer, mm.busy,
-      mm.appt, mm.connRate, mm.avgDur, mm.avgTalk, mm.totalTalkStr,
-    ]
+async function updateMonthly(token: string, callsByMonth: Record<string, Call[]>): Promise<void> {
+  const existingRows = await sheetRead(token, 'Monthly!A:K')
+  const monthToRowNum: Record<string, number> = {}
+  for (let i = 0; i < existingRows.length; i++) {
+    const m = String(existingRows[i][1] ?? '').trim()
+    if (m) monthToRowNum[m] = i + 1
+  }
 
-    if (monthlyIdx >= 0) {
-      await sheetWrite(token, `Monthly!A${monthlyIdx + 1}:K${monthlyIdx + 1}`, [monthlyRow])
-      console.log(`[update-sheets] Monthly: updated row ${monthlyIdx + 1}`)
+  const updates: { range: string; values: Row[] }[] = []
+  const newRows: Row[] = []
+
+  for (const [month, calls] of Object.entries(callsByMonth)) {
+    const mm = computeMetrics(calls)
+    const row: Row = ['', month, mm.total, mm.ansCount, mm.noAnswer, mm.busy, mm.appt, mm.connRate, mm.avgDur, mm.avgTalk, mm.totalTalkStr]
+    const rowNum = monthToRowNum[month]
+    if (rowNum) {
+      updates.push({ range: `Monthly!A${rowNum}:K${rowNum}`, values: [row] })
     } else {
-      await sheetAppend(token, 'Monthly!A:K', [monthlyRow])
-      console.log('[update-sheets] Monthly: appended new row')
+      newRows.push(row)
     }
+  }
 
-    // ── 3. Agent sheet ───────────────────────────────────────────────────────────
-    // Columns: A(Month) B(Agent Name) C(Slug) D(Calls) E(Answered) F(Conn%)
-    //          G(TalkTime) H(AvgTalk) I(FollowUp) J(Qualification) K(Qual%)
-    // Note: column A only has month name for the FIRST agent row per month block
+  await sheetBatchWrite(token, updates)
+  if (newRows.length > 0) await sheetAppend(token, 'Monthly!A:K', newRows)
 
-    const agentRows      = await sheetRead(token, 'Agent!A:K')
-    const monthBlockStart = agentRows.findIndex(r => String(r[0] ?? '').trim() === monthStr)
+  console.log(`[update-sheets] Monthly: ${updates.length} updated, ${newRows.length} appended`)
+}
 
-    if (monthBlockStart >= 0) {
-      // Month block exists — update individual agent rows
+async function updateAgent(token: string, callsByMonth: Record<string, Call[]>): Promise<void> {
+  const existingRows = await sheetRead(token, 'Agent!A:K')
+
+  // Find month block starts (column A has the month name for the first agent in the block)
+  const monthBlockStart: Record<string, number> = {}
+  for (let i = 0; i < existingRows.length; i++) {
+    const m = String(existingRows[i][0] ?? '').trim()
+    if (m && !monthBlockStart[m]) monthBlockStart[m] = i
+  }
+
+  const updates: { range: string; values: Row[] }[] = []
+  const monthsToAppend: { month: string; rows: Row[] }[] = []
+
+  for (const [month, calls] of Object.entries(callsByMonth)) {
+    const agents = computeAgentMetrics(calls)
+    const blockStart = monthBlockStart[month]
+
+    if (blockStart !== undefined) {
+      // Update existing rows within this month's block
       for (const a of agents) {
         const connPct = a.calls > 0 ? Math.round(a.answered / a.calls * 1000) / 1000 : 0
         const avgTalk = a.answered > 0 ? Math.round(a.talkTime / a.answered) : 0
         const qualPct = a.calls > 0 ? a.qualified / a.calls : 0
 
-        // Find this agent's row within the month block
         let agentRowIdx = -1
-        for (let i = monthBlockStart; i < agentRows.length; i++) {
-          const rowA = String(agentRows[i][0] ?? '').trim()
-          if (i > monthBlockStart && rowA !== '' && rowA !== monthStr) break
-          if (String(agentRows[i][2] ?? '').trim() === a.slug) { agentRowIdx = i; break }
+        for (let i = blockStart; i < existingRows.length; i++) {
+          const rowA = String(existingRows[i][0] ?? '').trim()
+          if (i > blockStart && rowA !== '' && rowA !== month) break
+          if (String(existingRows[i][2] ?? '').trim() === a.slug) { agentRowIdx = i; break }
         }
 
-        const isFirst = agentRowIdx === monthBlockStart
+        const isFirst = agentRowIdx === blockStart
         const row: Row = [
-          isFirst ? monthStr : '', a.name, a.slug,
+          isFirst ? month : '', a.name, a.slug,
           a.calls, a.answered, connPct,
           `${a.talkTime} sec`, `${avgTalk} sec`,
           a.followUp, a.qualified, qualPct,
         ]
 
         if (agentRowIdx >= 0) {
-          await sheetWrite(token, `Agent!A${agentRowIdx + 1}:K${agentRowIdx + 1}`, [row])
-        } else {
-          await sheetAppend(token, 'Agent!A:K', [['', a.name, a.slug, a.calls, a.answered, connPct, `${a.talkTime} sec`, `${avgTalk} sec`, a.followUp, a.qualified, qualPct]])
+          updates.push({ range: `Agent!A${agentRowIdx + 1}:K${agentRowIdx + 1}`, values: [row] })
         }
       }
-      console.log('[update-sheets] Agent: updated existing month block')
     } else {
-      // New month — append all agent rows at once (first row has month name)
+      // New month block — collect all 4 agent rows together
       const newRows: Row[] = agents.map((a, i) => {
         const connPct = a.calls > 0 ? Math.round(a.answered / a.calls * 1000) / 1000 : 0
         const avgTalk = a.answered > 0 ? Math.round(a.talkTime / a.answered) : 0
         const qualPct = a.calls > 0 ? a.qualified / a.calls : 0
         return [
-          i === 0 ? monthStr : '', a.name, a.slug,
+          i === 0 ? month : '', a.name, a.slug,
           a.calls, a.answered, connPct,
           `${a.talkTime} sec`, `${avgTalk} sec`,
           a.followUp, a.qualified, qualPct,
         ]
       })
-      await sheetAppend(token, 'Agent!A:K', newRows)
-      console.log('[update-sheets] Agent: appended new month block')
+      monthsToAppend.push({ month, rows: newRows })
+    }
+  }
+
+  await sheetBatchWrite(token, updates)
+
+  // Append new month blocks in chronological order
+  const MONTH_ORDER = ['January','February','March','April','May','June','July','August','September','October','November','December']
+  monthsToAppend.sort((a, b) => MONTH_ORDER.indexOf(a.month) - MONTH_ORDER.indexOf(b.month))
+  for (const { rows } of monthsToAppend) {
+    await sheetAppend(token, 'Agent!A:K', rows)
+  }
+
+  console.log(`[update-sheets] Agent: ${updates.length} rows updated, ${monthsToAppend.length} new month blocks appended`)
+}
+
+async function updateTopline(token: string, callsByMonth: Record<string, Call[]>): Promise<void> {
+  const toplineRows = await sheetRead(token, 'Topline!A:Z')
+  const headerRow   = (toplineRows[1] ?? []) as string[]
+
+  const updates: { range: string; values: Row[] }[] = []
+
+  for (const [month, calls] of Object.entries(callsByMonth)) {
+    const mm     = computeMetrics(calls)
+    const colIdx = headerRow.findIndex(c => String(c ?? '').trim() === month)
+
+    if (colIdx < 0) {
+      console.warn(`[update-sheets] Topline: no column for "${month}" — add it to the header row manually`)
+      continue
     }
 
-    // ── 4. Topline sheet ─────────────────────────────────────────────────────────
-    // Row 2 is the header: ["Metrics", 2026, "March", "April", ...]
-    // Rows 3–15 are metrics, each month is a column
+    const col    = String.fromCharCode(65 + colIdx)
+    const values = [
+      mm.total, mm.ansCount, mm.connRate, mm.avgDur, mm.avgTalk,
+      mm.totalTalkStr, mm.followUp, mm.appt, mm.short, mm.meaningful,
+      mm.leadPct, mm.callsPerLead, mm.noAnswer,
+    ]
+    values.forEach((v, i) => updates.push({ range: `Topline!${col}${i + 3}`, values: [[v]] }))
+  }
 
-    const toplineRows = await sheetRead(token, 'Topline!A:Z')
-    const headerRow   = (toplineRows[1] ?? []) as string[]
-    const colIdx      = headerRow.findIndex(c => String(c ?? '').trim() === monthStr)
+  await sheetBatchWrite(token, updates)
+  console.log(`[update-sheets] Topline: updated ${Object.keys(callsByMonth).length} month column(s)`)
+}
 
-    if (colIdx >= 0) {
-      const col = String.fromCharCode(65 + colIdx)
+// ── Main handler ───────────────────────────────────────────────────────────────
 
-      // Metric rows 3–15 (1-indexed sheet rows), array index i → sheet row i+3
-      const toplineValues = [
-        mm.total,        // Row 3:  Total Calls Attempted
-        mm.ansCount,     // Row 4:  Answered Calls
-        mm.connRate,     // Row 5:  Connection Rate
-        mm.avgDur,       // Row 6:  Avg Call Duration
-        mm.avgTalk,      // Row 7:  Avg Talk Time
-        mm.totalTalkStr, // Row 8:  Total Talk Time
-        mm.followUp,     // Row 9:  Follow Up
-        mm.appt,         // Row 10: Appointment Scheduled
-        mm.short,        // Row 11: Short Calls (<10s)
-        mm.meaningful,   // Row 12: Meaningful Calls (>30s)
-        mm.leadPct,      // Row 13: Lead Qualification %
-        mm.callsPerLead, // Row 14: Calls per Lead
-        mm.noAnswer,     // Row 15: No Answer
-      ]
+Deno.serve(async (req: Request) => {
+  if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 })
 
-      await sheetBatchWrite(
-        token,
-        toplineValues.map((v, i) => ({
-          range: `Topline!${col}${i + 3}`,
-          values: [[v]],
-        }))
+  const url      = new URL(req.url)
+  const mode     = url.searchParams.get('mode') ?? 'daily'        // 'daily' | 'backfill'
+  const fromParam = url.searchParams.get('from') ?? '2026-03-01'  // backfill start date
+
+  try {
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY)
+    const token    = await getGoogleToken()
+    const now      = new Date()
+
+    if (mode === 'backfill') {
+      // ── Backfill mode: fetch all historical data at once ────────────────────
+      console.log(`[update-sheets] Backfill from ${fromParam} to ${fmtDate(now)}`)
+
+      const allCalls = await fetchAllCalls(supabase, fromParam, fmtDate(now))
+      console.log(`[update-sheets] Fetched ${allCalls.length} total calls`)
+
+      // Group by date string and by month name
+      const byDate:  Record<string, Call[]> = {}
+      const byMonth: Record<string, Call[]> = {}
+
+      for (const c of allCalls) {
+        if (!c.timestamp) continue
+        const d        = new Date(c.timestamp)
+        const dateStr  = fmtDate(d)
+        const month    = monthLabel(d)
+        if (!byDate[dateStr])  byDate[dateStr]  = []
+        if (!byMonth[month])   byMonth[month]   = []
+        byDate[dateStr].push(c as unknown as Call)
+        byMonth[month].push(c as unknown as Call)
+      }
+
+      // Update all four sheets
+      await updateDaily(token, byDate)
+      await updateMonthly(token, byMonth)
+      await updateAgent(token, byMonth)
+      await updateTopline(token, byMonth)
+
+      return new Response(
+        JSON.stringify({ success: true, mode: 'backfill', from: fromParam, to: fmtDate(now), totalCalls: allCalls.length, days: Object.keys(byDate).length, months: Object.keys(byMonth) }),
+        { headers: { 'Content-Type': 'application/json' } }
       )
-      console.log(`[update-sheets] Topline: updated column ${col} (${monthStr})`)
-    } else {
-      console.warn(`[update-sheets] Topline: column for "${monthStr}" not found — add it to the header row`)
-    }
 
-    return new Response(
-      JSON.stringify({ success: true, date: yStr, month: monthStr }),
-      { headers: { 'Content-Type': 'application/json' } }
-    )
+    } else {
+      // ── Daily mode: yesterday + current month ───────────────────────────────
+      const yesterday  = new Date(now)
+      yesterday.setDate(yesterday.getDate() - 1)
+      const yStr       = fmtDate(yesterday)
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1)
+      const monthStr   = monthLabel(now)
+
+      console.log(`[update-sheets] Daily update for ${yStr}, month: ${monthStr}`)
+
+      const [{ data: dayCalls }, { data: monthCalls }] = await Promise.all([
+        supabase.from('calls').select('*').gte('timestamp', `${yStr}T00:00:00Z`).lte('timestamp', `${yStr}T23:59:59Z`),
+        supabase.from('calls').select('*').gte('timestamp', `${fmtDate(monthStart)}T00:00:00Z`).lte('timestamp', `${fmtDate(now)}T23:59:59Z`),
+      ])
+
+      await updateDaily(token, { [yStr]: (dayCalls ?? []) as unknown as Call[] })
+      await updateMonthly(token, { [monthStr]: (monthCalls ?? []) as unknown as Call[] })
+      await updateAgent(token, { [monthStr]: (monthCalls ?? []) as unknown as Call[] })
+      await updateTopline(token, { [monthStr]: (monthCalls ?? []) as unknown as Call[] })
+
+      return new Response(
+        JSON.stringify({ success: true, mode: 'daily', date: yStr, month: monthStr }),
+        { headers: { 'Content-Type': 'application/json' } }
+      )
+    }
 
   } catch (err) {
     console.error('[update-sheets] Fatal:', err)
