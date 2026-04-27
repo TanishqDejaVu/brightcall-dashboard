@@ -63,8 +63,9 @@ async function getGoogleToken(): Promise<string> {
 
 type Row = (string | number)[]
 
-async function sheetRead(token: string, range: string): Promise<Row[]> {
-  const res = await fetch(`${SHEETS_BASE}/values/${encodeURIComponent(range)}`, {
+async function sheetRead(token: string, range: string, unformatted = false): Promise<Row[]> {
+  const qs  = unformatted ? '?valueRenderOption=UNFORMATTED_VALUE' : ''
+  const res = await fetch(`${SHEETS_BASE}/values/${encodeURIComponent(range)}${qs}`, {
     headers: { Authorization: `Bearer ${token}` },
   })
   return ((await res.json()).values ?? []) as Row[]
@@ -193,7 +194,9 @@ async function fetchAllCalls(supabase: ReturnType<typeof createClient>, from: st
 // ── Sheet updaters ─────────────────────────────────────────────────────────────
 
 async function updateDaily(token: string, callsByDate: Record<string, Call[]>): Promise<void> {
-  const existingRows = await sheetRead(token, 'Daily!A:M')
+  // Use UNFORMATTED_VALUE so date cells return raw serial numbers (e.g. 46119)
+  // instead of the formatted display string (e.g. "April 8")
+  const existingRows = await sheetRead(token, 'Daily!A:M', true)
 
   // Build a map: excelSerial → row index (1-indexed)
   const serialToRowNum: Record<number, number> = {}
