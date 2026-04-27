@@ -129,17 +129,43 @@ function computeMetrics(raw: Call[]) {
   const followUp  = calls.filter(c => is(c, 'Follow Up')).length
   const appt      = calls.filter(c => is(c, 'Appointment Scheduled')).length
   const qualified = calls.filter(c => is(c, 'Qualified')).length
-  const short     = ans.filter(c => (c.talkTime ?? 0) > 0 && (c.talkTime ?? 0) < 10).length
+  const short      = ans.filter(c => (c.talkTime ?? 0) > 0 && (c.talkTime ?? 0) < 10).length
+  const medium     = ans.filter(c => (c.talkTime ?? 0) >= 10 && (c.talkTime ?? 0) < 30).length
   const meaningful = ans.filter(c => (c.talkTime ?? 0) >= 30).length
 
   return {
-    total, ansCount, noAnswer, busy, followUp, appt, qualified, short, meaningful,
+    total, ansCount, noAnswer, busy, followUp, appt, qualified, short, medium, meaningful,
     connRate:     total    > 0 ? Math.round(ansCount / total * 1000) / 1000 : 0,
     avgDur:       total    > 0 ? secStr(totalDur / total)             : '0 sec',
     avgTalk:      ansCount > 0 ? secStr(totalTalk / ansCount)         : '0 sec',
     totalTalkStr: secStr(totalTalk),
     leadPct:      total    > 0 ? appt / total                         : 0,
     callsPerLead: appt     > 0 ? Math.round(total / appt * 100) / 100 : 0,
+    noAnswerPct:  total    > 0 ? noAnswer / total                     : 0,
+    busyPct:      total    > 0 ? busy / total                         : 0,
+  }
+}
+
+// Maps sheet row label → metric value
+function metricValues(mm: ReturnType<typeof computeMetrics>): Record<string, string | number> {
+  return {
+    'Total Calls Attempted':       mm.total,
+    'Answered Calls':              mm.ansCount,
+    'Connection Rate':             mm.connRate,
+    'Avg Call Duration':           mm.avgDur,
+    'Avg Talk Time':               mm.avgTalk,
+    'Total Talk Time':             mm.totalTalkStr,
+    'Follow Up':                   mm.followUp,
+    'Appointment Scheduled':       mm.appt,
+    'Short Calls (<10s talk)':     mm.short,
+    'Calls (>10 <30 Talks)':       mm.medium,
+    'Meaningful Calls (>30s talk)': mm.meaningful,
+    'Lead Qualification %':        mm.leadPct,
+    'Calls per Lead':              mm.callsPerLead,
+    'No Answer':                   mm.noAnswer,
+    'Busy':                        mm.busy,
+    'No Answer %':                 mm.noAnswerPct,
+    'Busy %':                      mm.busyPct,
   }
 }
 
@@ -336,28 +362,96 @@ async function updateTopline(token: string, callsByMonth: Record<string, Call[]>
   const toplineRows = await sheetRead(token, 'Topline!A:Z')
   const headerRow   = (toplineRows[1] ?? []) as string[]
 
+  // Build label → sheet row number map from column A
+  const labelToRow: Record<string, number> = {}
+  for (let r = 0; r < toplineRows.length; r++) {
+    const label = String(toplineRows[r][0] ?? '').trim()
+    if (label && label !== 'Metrics') labelToRow[label] = r + 1
+  }
+
   const updates: { range: string; values: Row[] }[] = []
 
   for (const [month, calls] of Object.entries(callsByMonth)) {
-    const mm     = computeMetrics(calls)
     const colIdx = headerRow.findIndex(c => String(c ?? '').trim() === month)
-
     if (colIdx < 0) {
-      console.warn(`[update-sheets] Topline: no column for "${month}" — add it to the header row manually`)
+      console.warn(`[update-sheets] Topline: no column for "${month}" — add it to the header row`)
       continue
     }
-
     const col    = String.fromCharCode(65 + colIdx)
-    const values = [
-      mm.total, mm.ansCount, mm.connRate, mm.avgDur, mm.avgTalk,
-      mm.totalTalkStr, mm.followUp, mm.appt, mm.short, mm.meaningful,
-      mm.leadPct, mm.callsPerLead, mm.noAnswer,
-    ]
-    values.forEach((v, i) => updates.push({ range: `Topline!${col}${i + 3}`, values: [[v]] }))
+    const values = metricValues(computeMetrics(calls))
+
+    for (const [label, value] of Object.entries(values)) {
+      const rowNum = labelToRow[label]
+      if (rowNum) updates.push({ range: `Topline!${col}${rowNum}`, values: [[value]] })
+    }
   }
 
   await sheetBatchWrite(token, updates)
   console.log(`[update-sheets] Topline: updated ${Object.keys(callsByMonth).length} month column(s)`)
+}
+
+// Week of month: W1=1-7, W2=8-14, W3=15-21, W4=22-31
+function weekLabel(d: Date): string {
+  const day = d.getDate()
+  if (day <= 7)  return 'W1'
+  if (day <= 14) return 'W2'
+  if (day <= 21) return 'W3'
+  return 'W4'
+}
+
+async function updateSummary(token: string, callsByDate: Record<string, Call[]>): Promise<void> {
+  const summaryRows = await sheetRead(token, 'Summary!A:Z')
+
+  // Row 2 (idx 1): month headers — propagate across merged empty cells
+  // Row 3 (idx 2): week labels (W1–W4)
+  const monthHeaderRow = (summaryRows[1] ?? []) as string[]
+  const weekHeaderRow  = (summaryRows[2] ?? []) as string[]
+
+  // Build column map: "April_W2" → column letter
+  const colMap: Record<string, string> = {}
+  let currentMonth = ''
+  for (let c = 1; c < monthHeaderRow.length; c++) {
+    const m = String(monthHeaderRow[c] ?? '').trim()
+    if (m) currentMonth = m
+    const w = String(weekHeaderRow[c] ?? '').trim()
+    if (currentMonth && w) {
+      colMap[`${currentMonth}_${w}`] = String.fromCharCode(65 + c)
+    }
+  }
+
+  // Build label → row number map from column A (same as Topline)
+  const labelToRow: Record<string, number> = {}
+  for (let r = 0; r < summaryRows.length; r++) {
+    const label = String(summaryRows[r][0] ?? '').trim()
+    if (label && label !== 'Metrics') labelToRow[label] = r + 1
+  }
+
+  // Group calls by month_week
+  const byWeek: Record<string, Call[]> = {}
+  for (const [dateStr, calls] of Object.entries(callsByDate)) {
+    const d   = new Date(dateStr)
+    const key = `${monthLabel(d)}_${weekLabel(d)}`
+    if (!byWeek[key]) byWeek[key] = []
+    byWeek[key].push(...calls)
+  }
+
+  const updates: { range: string; values: Row[] }[] = []
+
+  for (const [key, calls] of Object.entries(byWeek)) {
+    const col = colMap[key]
+    if (!col) {
+      console.warn(`[update-sheets] Summary: no column for "${key}"`)
+      continue
+    }
+    const values = metricValues(computeMetrics(calls))
+    for (const [label, value] of Object.entries(values)) {
+      const rowNum = labelToRow[label]
+      if (rowNum) updates.push({ range: `Summary!${col}${rowNum}`, values: [[value]] })
+    }
+  }
+
+  await sheetBatchWrite(token, updates)
+  console.log(`[update-sheets] Summary: updated ${Object.keys(byWeek).length} week column(s)`)
 }
 
 // ── Main handler ───────────────────────────────────────────────────────────────
@@ -396,11 +490,12 @@ Deno.serve(async (req: Request) => {
         byMonth[month].push(c as unknown as Call)
       }
 
-      // Update all four sheets
+      // Update all five sheets
       await updateDaily(token, byDate)
       await updateMonthly(token, byMonth)
       await updateAgent(token, byMonth)
       await updateTopline(token, byMonth)
+      await updateSummary(token, byDate)
 
       return new Response(
         JSON.stringify({ success: true, mode: 'backfill', from: fromParam, to: fmtDate(now), totalCalls: allCalls.length, days: Object.keys(byDate).length, months: Object.keys(byMonth) }),
@@ -426,6 +521,7 @@ Deno.serve(async (req: Request) => {
       await updateMonthly(token, { [monthStr]: (monthCalls ?? []) as unknown as Call[] })
       await updateAgent(token, { [monthStr]: (monthCalls ?? []) as unknown as Call[] })
       await updateTopline(token, { [monthStr]: (monthCalls ?? []) as unknown as Call[] })
+      await updateSummary(token, { [yStr]: (dayCalls ?? []) as unknown as Call[] })
 
       return new Response(
         JSON.stringify({ success: true, mode: 'daily', date: yStr, month: monthStr }),
