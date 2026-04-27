@@ -1,7 +1,8 @@
 import { useState } from 'react'
-import { RefreshCw, User, ChevronDown, Sun, Moon } from 'lucide-react'
+import { RefreshCw, User, ChevronDown, Sun, Moon, LogOut } from 'lucide-react'
 import { format } from 'date-fns'
 import dejavuLogo from '../assets/dejavu-logo.png'
+import { supabase } from '../lib/supabase'
 
 const TABS = [
   { id: '1d', label: '1D' },
@@ -104,6 +105,15 @@ export default function Navbar({ dateRange, selectedAgent, onRangeChange, onAgen
             title="Refresh data"
           >
             <RefreshCw size={13} className={`transition-transform duration-500 ${loading ? 'animate-spin text-blue-500' : 'group-hover:rotate-90'}`} />
+          </button>
+
+          {/* Logout */}
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="p-1.5 rounded-lg hover:bg-red-500/10 transition text-slate-400 hover:text-red-500 dark:hover:text-red-400"
+            title="Sign out"
+          >
+            <LogOut size={13} />
           </button>
         </div>
       </div>
