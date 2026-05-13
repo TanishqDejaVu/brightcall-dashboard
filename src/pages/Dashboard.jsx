@@ -25,7 +25,7 @@ function SectionLabel({ children }) {
 }
 
 export default function Dashboard() {
-  const [dateRange, setDateRange] = useState('1w')
+  const [dateRange, setDateRange] = useState('1d')
   const [selectedAgent, setSelectedAgent] = useState('all')
   const { data, loading, refreshing, progress, error, lastUpdated, refetch } = useDashboard(dateRange, selectedAgent)
   const { isDark, toggleTheme } = useTheme()

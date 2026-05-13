@@ -4,10 +4,10 @@ import { supabase } from '../lib/supabase'
 const API_KEY = import.meta.env.VITE_BRIGHTCALL_API_KEY
 
 const AGENT_NAMES = {
-  '827909': 'Telesales 1',
-  '827910': 'Telesales 2',
-  '827911': 'Telesales 3',
-  '827912': 'Telesales 4',
+  '827909': 'Sana',
+  '827910': 'Huzaifa',
+  '827911': 'Mohammed',
+  '827912': 'Mehak',
 }
 
 function buildPayload(dayFrom, dayTo, page = 1) {
